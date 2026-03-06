@@ -538,8 +538,8 @@
   <main class="main">
     <!-- Prompt -->
     <div class="prompt-card" id="promptCard">
-      <div class="prompt-label" id="promptLabel">Translate to English</div>
-      <div class="prompt-word" id="promptWord">Stra&szlig;e</div>
+      <div class="prompt-label" id="promptLabel">Translate to Polish</div>
+      <div class="prompt-word" id="promptWord">Straße</div>
       <div class="prompt-context" id="promptContext"></div>
       <div class="result-row" id="resultRow" style="display:none;">
         <span class="label">Your answer:</span>
@@ -600,29 +600,41 @@
 
   <script>
     // =========================================================================
-    // VOCABULARY DATA (mockup - German to English)
+    // VOCABULARY DATA (mockup - German to Polish)
+    // The user sees a German word and writes the Polish translation.
+    // Polish special characters: ą ć ę ł ń ó ś ź ż
     // =========================================================================
     const VOCABULARY = [
-      { id: "v1",  prompt: "Stra\u00dfe",       answer: "street",      context: "Die Stra\u00dfe ist lang." },
-      { id: "v2",  prompt: "Haus",            answer: "house",       context: "Das Haus ist gro\u00df." },
-      { id: "v3",  prompt: "Wasser",          answer: "water",       context: "Ich trinke Wasser." },
-      { id: "v4",  prompt: "Buch",            answer: "book",        context: "Ich lese ein Buch." },
-      { id: "v5",  prompt: "Schule",          answer: "school",      context: "Die Kinder gehen zur Schule." },
-      { id: "v6",  prompt: "Freund",          answer: "friend",      context: "Er ist mein Freund." },
-      { id: "v7",  prompt: "Hund",            answer: "dog",         context: "Der Hund ist braun." },
-      { id: "v8",  prompt: "Katze",           answer: "cat",         context: "Die Katze schl\u00e4ft." },
-      { id: "v9",  prompt: "Baum",            answer: "tree",        context: "Der Baum ist hoch." },
-      { id: "v10", prompt: "Blume",           answer: "flower",      context: "Die Blume ist sch\u00f6n." },
-      { id: "v11", prompt: "Stadt",           answer: "city",        context: "Berlin ist eine Stadt." },
-      { id: "v12", prompt: "Himmel",          answer: "sky",         context: "Der Himmel ist blau." },
-      { id: "v13", prompt: "Essen",           answer: "food",        context: "Das Essen schmeckt gut." },
-      { id: "v14", prompt: "Arbeit",          answer: "work",        context: "Ich gehe zur Arbeit." },
-      { id: "v15", prompt: "Zeit",            answer: "time",        context: "Die Zeit vergeht schnell." },
-      { id: "v16", prompt: "Liebe",           answer: "love",        context: "Liebe ist wichtig." },
-      { id: "v17", prompt: "Nacht",           answer: "night",       context: "Die Nacht ist dunkel." },
-      { id: "v18", prompt: "Morgen",          answer: "morning",     context: "Guten Morgen!" },
-      { id: "v19", prompt: "K\u00fcche",        answer: "kitchen",     context: "Ich koche in der K\u00fcche." },
-      { id: "v20", prompt: "Fenster",         answer: "window",      context: "Das Fenster ist offen." },
+      { id: "v1",  prompt: "Straße",         answer: "ulica",         context: "Die Straße ist lang." },
+      { id: "v2",  prompt: "Haus",            answer: "dom",           context: "Das Haus ist groß." },
+      { id: "v3",  prompt: "Wasser",          answer: "woda",          context: "Ich trinke Wasser." },
+      { id: "v4",  prompt: "Buch",            answer: "książka",       context: "Ich lese ein Buch." },
+      { id: "v5",  prompt: "Schule",          answer: "szkoła",        context: "Die Kinder gehen zur Schule." },
+      { id: "v6",  prompt: "Freund",          answer: "przyjaciel",    context: "Er ist mein Freund." },
+      { id: "v7",  prompt: "Hund",            answer: "pies",          context: "Der Hund ist braun." },
+      { id: "v8",  prompt: "Katze",           answer: "kot",           context: "Die Katze schläft." },
+      { id: "v9",  prompt: "Baum",            answer: "drzewo",        context: "Der Baum ist hoch." },
+      { id: "v10", prompt: "Blume",           answer: "kwiat",         context: "Die Blume ist schön." },
+      { id: "v11", prompt: "Stadt",           answer: "miasto",        context: "Berlin ist eine Stadt." },
+      { id: "v12", prompt: "Himmel",          answer: "niebo",         context: "Der Himmel ist blau." },
+      { id: "v13", prompt: "Essen",           answer: "jedzenie",      context: "Das Essen schmeckt gut." },
+      { id: "v14", prompt: "Arbeit",          answer: "praca",         context: "Ich gehe zur Arbeit." },
+      { id: "v15", prompt: "Zeit",            answer: "czas",          context: "Die Zeit vergeht schnell." },
+      { id: "v16", prompt: "Liebe",           answer: "miłość",        context: "Liebe ist wichtig." },
+      { id: "v17", prompt: "Nacht",           answer: "noc",           context: "Die Nacht ist dunkel." },
+      { id: "v18", prompt: "Morgen",          answer: "rano",          context: "Guten Morgen!" },
+      { id: "v19", prompt: "Küche",           answer: "kuchnia",       context: "Ich koche in der Küche." },
+      { id: "v20", prompt: "Fenster",         answer: "okno",          context: "Das Fenster ist offen." },
+      { id: "v21", prompt: "Glück",           answer: "szczęście",     context: "Ich wünsche dir Glück." },
+      { id: "v22", prompt: "Brücke",          answer: "most",          context: "Die Brücke ist alt." },
+      { id: "v23", prompt: "Vogel",           answer: "ptak",          context: "Der Vogel singt." },
+      { id: "v24", prompt: "Schlüssel",       answer: "klucz",         context: "Wo ist der Schlüssel?" },
+      { id: "v25", prompt: "Frühling",        answer: "wiosna",        context: "Der Frühling kommt." },
+      { id: "v26", prompt: "Herbst",          answer: "jesień",        context: "Im Herbst fallen Blätter." },
+      { id: "v27", prompt: "Mädchen",         answer: "dziewczyna",    context: "Das Mädchen lacht." },
+      { id: "v28", prompt: "Junge",           answer: "chłopiec",      context: "Der Junge spielt." },
+      { id: "v29", prompt: "Tür",             answer: "drzwi",         context: "Die Tür ist geschlossen." },
+      { id: "v30", prompt: "Zug",             answer: "pociąg",        context: "Der Zug fährt ab." },
     ];
 
     // =========================================================================
@@ -789,7 +801,7 @@
       loadingStatus.textContent = "Loading OCR engine...";
       loadingBar.style.width = "20%";
 
-      worker = await Tesseract.createWorker("eng", 1, {
+      worker = await Tesseract.createWorker("pol+eng", 1, {
         logger: (m) => {
           if (m.status === "recognizing text") {
             loadingBar.style.width = (20 + m.progress * 60) + "%";
@@ -861,6 +873,11 @@
       return cropCanvas;
     }
 
+    // Normalize text: lowercase, keep only letters (including Polish diacritics)
+    function normalizeText(text) {
+      return text.trim().toLowerCase().replace(/[^a-ząćęłńóśźż]/g, "");
+    }
+
     async function recognizeText() {
       if (!worker) return "";
       // Crop to just the drawn region for better recognition
@@ -868,8 +885,7 @@
       if (!cropped) return "";
       const dataUrl = cropped.toDataURL("image/png");
       const result = await worker.recognize(dataUrl);
-      // Clean up recognized text
-      return result.data.text.trim().toLowerCase().replace(/[^a-z]/g, "");
+      return normalizeText(result.data.text);
     }
 
     // Levenshtein distance for fuzzy matching
@@ -944,7 +960,7 @@
       isShowingResult = false;
 
       promptCard.className = "prompt-card";
-      promptLabel.textContent = "Translate to English";
+      promptLabel.textContent = "Translate to Polish";
       promptWord.textContent = vocab.prompt;
       promptContext.textContent = vocab.context;
       resultRow.style.display = "none";
@@ -966,7 +982,7 @@
 
       try {
         const recognized = await recognizeText();
-        const expected = currentVocab.answer.toLowerCase().replace(/[^a-z]/g, "");
+        const expected = normalizeText(currentVocab.answer);
         // Exact match or fuzzy match (allow 1 char difference for words >= 4 chars)
         const dist = levenshtein(recognized, expected);
         const threshold = expected.length >= 4 ? 1 : 0;
