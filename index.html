@@ -26,13 +26,14 @@
       --success-bg: #dcfce7;
       --danger-bg: #fee2e2;
       --border: #e5e7eb;
-      --radius: 16px;
       --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
-      --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     html, body {
       height: 100%;
+      height: 100dvh;
       overflow: hidden;
       touch-action: none;
     }
@@ -45,37 +46,16 @@
       flex-direction: column;
       -webkit-user-select: none;
       user-select: none;
+      padding-top: var(--safe-top);
+      padding-bottom: var(--safe-bottom);
     }
 
-    /* ---- Header / Nav ---- */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 20px;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-      z-index: 10;
-    }
-
-    .header h1 {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--primary);
-      letter-spacing: -0.3px;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 8px;
-    }
-
+    /* ---- Header - removed, stats icon now floats ---- */
     .btn-icon {
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
       border: none;
-      background: var(--bg);
+      background: var(--surface);
       border-radius: 10px;
       display: flex;
       align-items: center;
@@ -84,6 +64,7 @@
       color: var(--text-muted);
       font-size: 18px;
       transition: background 0.15s, color 0.15s;
+      box-shadow: var(--shadow);
     }
 
     .btn-icon:hover, .btn-icon:active {
@@ -97,76 +78,94 @@
       display: flex;
       flex-direction: column;
       min-height: 0;
-      padding: 16px;
-      gap: 12px;
+      padding: 8px;
+      gap: 6px;
     }
 
-    /* ---- Prompt Card ---- */
-    .prompt-card {
+    /* ---- Prompt Bar (compact single row) ---- */
+    .prompt-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       background: var(--surface);
-      border-radius: var(--radius);
+      border-radius: 12px;
       box-shadow: var(--shadow);
-      padding: 20px 24px;
+      padding: 8px 12px;
       flex-shrink: 0;
       transition: background 0.4s ease;
-      position: relative;
-      overflow: hidden;
+      min-height: 44px;
     }
 
-    .prompt-card.result-correct {
+    .prompt-bar.result-correct {
       background: var(--success-bg);
     }
 
-    .prompt-card.result-wrong {
+    .prompt-bar.result-wrong {
       background: var(--danger-bg);
     }
 
     .prompt-label {
-      font-size: 12px;
+      font-size: 10px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       color: var(--text-muted);
-      margin-bottom: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .prompt-word {
-      font-size: 32px;
+      font-size: 22px;
       font-weight: 700;
-      letter-spacing: -0.5px;
-      line-height: 1.2;
+      letter-spacing: -0.3px;
+      line-height: 1.1;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .prompt-context {
-      font-size: 14px;
-      color: var(--text-muted);
-      margin-top: 4px;
+      display: none; /* Hidden on mobile to save space */
     }
 
-    .result-row {
+    .prompt-stats-btn {
+      flex-shrink: 0;
+    }
+
+    /* ---- Result info (shown below prompt bar after check) ---- */
+    .result-info {
+      display: none;
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 6px 12px;
+      flex-shrink: 0;
+      font-size: 13px;
+      box-shadow: var(--shadow);
+    }
+
+    .result-info.visible {
       display: flex;
+      gap: 16px;
       align-items: center;
-      gap: 10px;
-      margin-top: 12px;
-      font-size: 15px;
-      font-weight: 500;
+      flex-wrap: wrap;
     }
 
-    .result-row .label {
+    .result-info .label {
       color: var(--text-muted);
       font-weight: 400;
     }
 
-    .result-row .ocr-text {
+    .result-info .ocr-text {
       font-weight: 600;
     }
 
-    .result-row .correct-answer {
+    .result-info .correct-answer {
       font-weight: 600;
       color: var(--success);
     }
 
-    .result-row .wrong-answer {
+    .result-info .wrong-answer {
       color: var(--danger);
     }
 
@@ -174,14 +173,14 @@
     .drawing-area {
       flex: 1;
       display: flex;
-      gap: 12px;
+      gap: 6px;
       min-height: 0;
     }
 
     .canvas-wrapper {
       flex: 1;
       background: var(--surface);
-      border-radius: var(--radius);
+      border-radius: 12px;
       box-shadow: var(--shadow);
       overflow: hidden;
       position: relative;
@@ -203,10 +202,10 @@
       transform: translate(-50%, -50%);
       pointer-events: none;
       color: var(--border);
-      font-size: 20px;
+      font-size: 17px;
       font-weight: 500;
       text-align: center;
-      line-height: 1.4;
+      line-height: 1.3;
       opacity: 1;
       transition: opacity 0.3s;
     }
@@ -222,12 +221,12 @@
     }
 
     .btn-check {
-      width: 72px;
+      width: 56px;
       border: none;
-      border-radius: var(--radius);
+      border-radius: 12px;
       background: var(--primary);
       color: #fff;
-      font-size: 16px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
       display: flex;
@@ -254,8 +253,8 @@
     }
 
     .btn-check .spinner {
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
       border: 3px solid rgba(255,255,255,0.3);
       border-top-color: #fff;
       border-radius: 50%;
@@ -269,23 +268,23 @@
     /* ---- Bottom Actions ---- */
     .bottom-actions {
       display: flex;
-      gap: 12px;
+      gap: 6px;
       flex-shrink: 0;
     }
 
     .btn {
       flex: 1;
-      height: 56px;
+      height: 46px;
       border: none;
-      border-radius: var(--radius);
+      border-radius: 12px;
       font-family: inherit;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 6px;
       transition: background 0.15s, transform 0.1s;
     }
 
@@ -338,7 +337,7 @@
       border-radius: 20px 20px 0 0;
       width: 100%;
       max-width: 500px;
-      max-height: 80vh;
+      max-height: 85vh;
       display: flex;
       flex-direction: column;
       transform: translateY(100%);
@@ -353,50 +352,50 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 20px 24px 12px;
+      padding: 16px 20px 10px;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
 
     .modal-header h2 {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 700;
     }
 
     .modal-body {
       flex: 1;
       overflow-y: auto;
-      padding: 16px 24px 32px;
+      padding: 12px 16px 24px;
       -webkit-overflow-scrolling: touch;
     }
 
     .stats-summary {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 20px;
+      gap: 8px;
+      margin-bottom: 16px;
     }
 
     .stat-box {
       background: var(--bg);
-      border-radius: 12px;
-      padding: 14px;
+      border-radius: 10px;
+      padding: 10px;
       text-align: center;
     }
 
     .stat-box .number {
-      font-size: 28px;
+      font-size: 24px;
       font-weight: 700;
       line-height: 1;
     }
 
     .stat-box .label {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       color: var(--text-muted);
-      margin-top: 4px;
+      margin-top: 3px;
     }
 
     .stat-box.correct .number { color: var(--success); }
@@ -405,17 +404,17 @@
     .vocab-stats-list {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
     .vocab-stat-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 14px;
+      padding: 10px 12px;
       background: var(--bg);
-      border-radius: 10px;
-      font-size: 14px;
+      border-radius: 8px;
+      font-size: 13px;
     }
 
     .vocab-stat-item .word {
@@ -424,30 +423,30 @@
 
     .vocab-stat-item .translation {
       color: var(--text-muted);
-      font-size: 13px;
+      font-size: 12px;
     }
 
     .vocab-stat-item .ratio {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       font-weight: 600;
-      font-size: 13px;
+      font-size: 12px;
     }
 
     .ratio .correct-count { color: var(--success); }
     .ratio .wrong-count { color: var(--danger); }
 
     .btn-clear-stats {
-      margin-top: 16px;
+      margin-top: 12px;
       width: 100%;
-      height: 48px;
+      height: 44px;
       border: 2px solid var(--danger);
-      border-radius: 12px;
+      border-radius: 10px;
       background: transparent;
       color: var(--danger);
       font-family: inherit;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       transition: background 0.15s;
@@ -502,15 +501,6 @@
       border-radius: 2px;
       transition: width 0.3s;
     }
-
-    /* ---- Responsive ---- */
-    @media (min-width: 600px) {
-      .main {
-        max-width: 560px;
-        margin: 0 auto;
-        width: 100%;
-      }
-    }
   </style>
 </head>
 <body>
@@ -524,31 +514,24 @@
     </div>
   </div>
 
-  <!-- Header -->
-  <header class="header">
-    <h1>Anki Scribe</h1>
-    <div class="header-actions">
-      <button class="btn-icon" id="btnStats" title="Stats">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
-      </button>
-    </div>
-  </header>
+  <!-- Header removed - stats button integrated into prompt bar -->
 
   <!-- Main -->
   <main class="main">
-    <!-- Prompt -->
-    <div class="prompt-card" id="promptCard">
-      <div class="prompt-label" id="promptLabel">Translate to Polish</div>
-      <div class="prompt-word" id="promptWord">Straße</div>
-      <div class="prompt-context" id="promptContext"></div>
-      <div class="result-row" id="resultRow" style="display:none;">
-        <span class="label">Your answer:</span>
-        <span class="ocr-text" id="ocrResult"></span>
-      </div>
-      <div class="result-row" id="correctRow" style="display:none;">
-        <span class="label">Correct:</span>
-        <span class="correct-answer" id="correctAnswer"></span>
-      </div>
+    <!-- Compact prompt bar: label + word + stats icon in one row -->
+    <div class="prompt-bar" id="promptCard">
+      <span class="prompt-label" id="promptLabel">PL</span>
+      <span class="prompt-word" id="promptWord">Straße</span>
+      <span class="prompt-context" id="promptContext"></span>
+      <button class="btn-icon prompt-stats-btn" id="btnStats" title="Stats">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Result info (appears after check) -->
+    <div class="result-info" id="resultInfo">
+      <span><span class="label">You: </span><span class="ocr-text" id="ocrResult"></span></span>
+      <span><span class="label">Answer: </span><span class="correct-answer" id="correctAnswer"></span></span>
     </div>
 
     <!-- Drawing area + check button -->
@@ -565,11 +548,11 @@
     <!-- Bottom actions -->
     <div class="bottom-actions" id="bottomActions">
       <button class="btn btn-secondary" id="btnShowAnswer">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        Show Answer
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Show
       </button>
       <button class="btn btn-secondary" id="btnClear">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M5 6l1 14h12l1-14"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M5 6l1 14h12l1-14"/></svg>
         Clear
       </button>
     </div>
@@ -577,8 +560,8 @@
     <!-- Next button (shown after checking) -->
     <div class="bottom-actions" id="nextActions" style="display:none;">
       <button class="btn btn-next" id="btnNext">
-        Next Word
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+        Next
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
       </button>
     </div>
   </main>
@@ -695,14 +678,43 @@
       canvas.width = rect.width * dpr;
       canvas.height = rect.height * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      // Restore drawing settings
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.lineWidth = 6;
-      ctx.strokeStyle = "#1a1a2e";
       // Fill white background
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, rect.width, rect.height);
+      // Draw guide lines to help users write at consistent size
+      drawGuideLines(rect.width, rect.height);
+      // Restore drawing settings
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.lineWidth = 8;
+      ctx.strokeStyle = "#1a1a2e";
+    }
+
+    function drawGuideLines(w, h) {
+      ctx.save();
+      ctx.strokeStyle = "#e8ecf0";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([6, 4]);
+      // Horizontal center dashed line (baseline reference)
+      const midY = Math.round(h * 0.55);
+      ctx.beginPath();
+      ctx.moveTo(20, midY);
+      ctx.lineTo(w - 20, midY);
+      ctx.stroke();
+      // Upper guide (cap height)
+      const topY = Math.round(h * 0.2);
+      ctx.strokeStyle = "#eff1f5";
+      ctx.beginPath();
+      ctx.moveTo(20, topY);
+      ctx.lineTo(w - 20, topY);
+      ctx.stroke();
+      // Lower guide (descender)
+      const bottomY = Math.round(h * 0.8);
+      ctx.beginPath();
+      ctx.moveTo(20, bottomY);
+      ctx.lineTo(w - 20, bottomY);
+      ctx.stroke();
+      ctx.restore();
     }
 
     function getPos(e) {
@@ -770,10 +782,11 @@
       const rect = canvasWrapper.getBoundingClientRect();
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, rect.width, rect.height);
+      drawGuideLines(rect.width, rect.height);
       // Restore drawing settings after clear
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
-      ctx.lineWidth = 6;
+      ctx.lineWidth = 8;
       ctx.strokeStyle = "#1a1a2e";
       hasDrawn = false;
       placeholder.classList.remove("hidden");
@@ -812,9 +825,10 @@
         }
       });
 
-      // Configure for single word recognition
+      // Configure for single line recognition (handles single words and
+      // short phrases better than SINGLE_WORD in practice)
       await worker.setParameters({
-        tessedit_pageseg_mode: Tesseract.PSM.SINGLE_WORD,
+        tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE,
       });
 
       loadingBar.style.width = "100%";
@@ -826,20 +840,24 @@
     }
 
     function getCroppedCanvas() {
-      // Create a temp canvas to crop only the drawn region with padding
-      const rect = canvasWrapper.getBoundingClientRect();
-      const w = Math.round(rect.width);
-      const h = Math.round(rect.height);
+      // Work with actual canvas pixel buffer (which is CSS size * DPR)
+      const w = canvas.width;
+      const h = canvas.height;
+      // Reset transform to read raw pixels
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       const imgData = ctx.getImageData(0, 0, w, h);
+      ctx.restore();
       const data = imgData.data;
 
-      // Find bounding box of non-white pixels
+      // Find bounding box of non-white pixels (ignore guide lines by using
+      // a stricter threshold - guide lines are very light ~#e8ecf0 = rgb(232,236,240))
       let minX = w, minY = h, maxX = 0, maxY = 0;
       for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
           const i = (y * w + x) * 4;
-          // Check if pixel is significantly non-white
-          if (data[i] < 200 || data[i + 1] < 200 || data[i + 2] < 200) {
+          // Only count dark pixels (drawn strokes), not guide lines
+          if (data[i] < 160 || data[i + 1] < 160 || data[i + 2] < 160) {
             minX = Math.min(minX, x);
             minY = Math.min(minY, y);
             maxX = Math.max(maxX, x);
@@ -850,8 +868,9 @@
 
       if (minX >= maxX || minY >= maxY) return null; // Nothing drawn
 
-      // Add generous padding
-      const pad = 30;
+      // Add generous padding (scaled by DPR)
+      const dpr = window.devicePixelRatio || 1;
+      const pad = Math.round(40 * dpr);
       minX = Math.max(0, minX - pad);
       minY = Math.max(0, minY - pad);
       maxX = Math.min(w - 1, maxX + pad);
@@ -867,10 +886,101 @@
       // Fill white background
       cropCtx.fillStyle = "#ffffff";
       cropCtx.fillRect(0, 0, cropW, cropH);
-      // Draw the cropped region
+      // Draw the cropped region from raw pixel buffer
       cropCtx.drawImage(canvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
 
       return cropCanvas;
+    }
+
+    // Preprocess the canvas image for better OCR recognition:
+    // 1. Binarize (pure black/white, remove anti-aliasing)
+    // 2. Dilate (thicken strokes so Tesseract sees them clearly)
+    // 3. Scale up to a minimum height (Tesseract needs ~50-70px tall chars)
+    function preprocessForOCR(sourceCanvas) {
+      const sw = sourceCanvas.width;
+      const sh = sourceCanvas.height;
+      const srcCtx = sourceCanvas.getContext("2d");
+      const srcData = srcCtx.getImageData(0, 0, sw, sh);
+      const src = srcData.data;
+
+      // --- Step 1: Binarize ---
+      // Convert to pure black (0) or white (255) using Otsu-like threshold
+      const gray = new Uint8Array(sw * sh);
+      for (let i = 0; i < sw * sh; i++) {
+        const r = src[i * 4], g = src[i * 4 + 1], b = src[i * 4 + 2];
+        gray[i] = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+      }
+
+      // Simple threshold (works well for dark-on-white canvas drawing)
+      const threshold = 180;
+      const binary = new Uint8Array(sw * sh);
+      for (let i = 0; i < sw * sh; i++) {
+        binary[i] = gray[i] < threshold ? 0 : 255; // 0 = ink, 255 = background
+      }
+
+      // --- Step 2: Dilate (thicken strokes) ---
+      // 3x3 dilation: if any neighbor is ink (0), pixel becomes ink
+      const dilated = new Uint8Array(sw * sh);
+      dilated.set(binary);
+      for (let pass = 0; pass < 2; pass++) { // 2 passes for stronger dilation
+        const input = pass === 0 ? binary : dilated.slice();
+        for (let y = 1; y < sh - 1; y++) {
+          for (let x = 1; x < sw - 1; x++) {
+            const idx = y * sw + x;
+            if (input[idx] === 0) {
+              dilated[idx] = 0;
+              continue;
+            }
+            // Check 3x3 neighborhood
+            let isNearInk = false;
+            for (let dy = -1; dy <= 1 && !isNearInk; dy++) {
+              for (let dx = -1; dx <= 1 && !isNearInk; dx++) {
+                if (input[(y + dy) * sw + (x + dx)] === 0) {
+                  isNearInk = true;
+                }
+              }
+            }
+            dilated[idx] = isNearInk ? 0 : 255;
+          }
+        }
+      }
+
+      // --- Step 3: Scale up to minimum height ---
+      // Tesseract works best with characters ~50-70px tall.
+      // Target: at least 120px canvas height for reliable single-word OCR.
+      const minHeight = 140;
+      const scale = sh < minHeight ? minHeight / sh : 1;
+      const dw = Math.round(sw * scale);
+      const dh = Math.round(sh * scale);
+
+      // Write binarized+dilated result back to a canvas
+      const binCanvas = document.createElement("canvas");
+      binCanvas.width = sw;
+      binCanvas.height = sh;
+      const binCtx = binCanvas.getContext("2d");
+      const outData = binCtx.createImageData(sw, sh);
+      for (let i = 0; i < sw * sh; i++) {
+        const v = dilated[i];
+        outData.data[i * 4] = v;
+        outData.data[i * 4 + 1] = v;
+        outData.data[i * 4 + 2] = v;
+        outData.data[i * 4 + 3] = 255;
+      }
+      binCtx.putImageData(outData, 0, 0);
+
+      // Scale up if needed
+      if (scale > 1) {
+        const scaledCanvas = document.createElement("canvas");
+        scaledCanvas.width = dw;
+        scaledCanvas.height = dh;
+        const scaledCtx = scaledCanvas.getContext("2d");
+        // Use pixelated rendering to keep sharp edges
+        scaledCtx.imageSmoothingEnabled = false;
+        scaledCtx.drawImage(binCanvas, 0, 0, dw, dh);
+        return scaledCanvas;
+      }
+
+      return binCanvas;
     }
 
     // Normalize text: lowercase, keep only letters (including Polish diacritics)
@@ -880,10 +990,12 @@
 
     async function recognizeText() {
       if (!worker) return "";
-      // Crop to just the drawn region for better recognition
+      // Crop to just the drawn region
       const cropped = getCroppedCanvas();
       if (!cropped) return "";
-      const dataUrl = cropped.toDataURL("image/png");
+      // Apply binarization, dilation, and upscaling
+      const processed = preprocessForOCR(cropped);
+      const dataUrl = processed.toDataURL("image/png");
       const result = await worker.recognize(dataUrl);
       return normalizeText(result.data.text);
     }
@@ -917,8 +1029,7 @@
     const promptLabel = document.getElementById("promptLabel");
     const promptWord = document.getElementById("promptWord");
     const promptContext = document.getElementById("promptContext");
-    const resultRow = document.getElementById("resultRow");
-    const correctRow = document.getElementById("correctRow");
+    const resultInfo = document.getElementById("resultInfo");
     const ocrResult = document.getElementById("ocrResult");
     const correctAnswer = document.getElementById("correctAnswer");
     const btnCheck = document.getElementById("btnCheck");
@@ -959,12 +1070,11 @@
       currentVocab = vocab;
       isShowingResult = false;
 
-      promptCard.className = "prompt-card";
-      promptLabel.textContent = "Translate to Polish";
+      promptCard.className = "prompt-bar";
+      promptLabel.textContent = "PL";
       promptWord.textContent = vocab.prompt;
       promptContext.textContent = vocab.context;
-      resultRow.style.display = "none";
-      correctRow.style.display = "none";
+      resultInfo.className = "result-info";
 
       bottomActions.style.display = "flex";
       nextActions.style.display = "none";
@@ -983,20 +1093,19 @@
       try {
         const recognized = await recognizeText();
         const expected = normalizeText(currentVocab.answer);
-        // Exact match or fuzzy match (allow 1 char difference for words >= 4 chars)
+        // Fuzzy match: scale tolerance with word length
+        // 1-3 chars: exact match, 4-6 chars: 1 error, 7+ chars: 2 errors
         const dist = levenshtein(recognized, expected);
-        const threshold = expected.length >= 4 ? 1 : 0;
+        const threshold = expected.length >= 7 ? 2 : expected.length >= 4 ? 1 : 0;
         const isCorrect = recognized.length > 0 && dist <= threshold;
 
         // Show result
-        ocrResult.textContent = recognized || "(nothing detected)";
+        ocrResult.textContent = recognized || "(nothing)";
         ocrResult.className = "ocr-text " + (isCorrect ? "" : "wrong-answer");
-        resultRow.style.display = "flex";
-
         correctAnswer.textContent = currentVocab.answer;
-        correctRow.style.display = "flex";
+        resultInfo.className = "result-info visible";
 
-        promptCard.className = "prompt-card " + (isCorrect ? "result-correct" : "result-wrong");
+        promptCard.className = "prompt-bar " + (isCorrect ? "result-correct" : "result-wrong");
 
         // Record stats
         recordAttempt(currentVocab.id, isCorrect);
@@ -1017,9 +1126,10 @@
     function showAnswer() {
       if (isShowingResult) return;
       correctAnswer.textContent = currentVocab.answer;
-      correctRow.style.display = "flex";
-      resultRow.style.display = "none";
-      promptCard.className = "prompt-card result-wrong";
+      ocrResult.textContent = "(peeked)";
+      ocrResult.className = "ocr-text wrong-answer";
+      resultInfo.className = "result-info visible";
+      promptCard.className = "prompt-bar result-wrong";
 
       // Record as wrong since they peeked
       recordAttempt(currentVocab.id, false);
