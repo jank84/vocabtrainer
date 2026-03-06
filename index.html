@@ -134,9 +134,6 @@
       text-overflow: ellipsis;
     }
 
-    .prompt-context {
-      display: none; /* Hidden on mobile to save space */
-    }
 
     .prompt-stats-btn {
       flex-shrink: 0;
@@ -594,7 +591,7 @@
     <div class="prompt-bar" id="promptCard">
       <span class="prompt-label" id="promptLabel">PL</span>
       <span class="prompt-word" id="promptWord">Straße</span>
-      <span class="prompt-context" id="promptContext"></span>
+
       <button class="btn-icon prompt-stats-btn" id="btnStats" title="Stats">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
       </button>
@@ -667,42 +664,50 @@
 
   <script>
     // =========================================================================
-    // VOCABULARY DATA (mockup - German to Polish)
-    // The user sees a German word and writes the Polish translation.
+    // VOCABULARY DATA - loaded from external file
+    // The user sees an English word/phrase and writes the Polish translation.
     // Polish special characters: ą ć ę ł ń ó ś ź ż
     // =========================================================================
-    const VOCABULARY = [
-      { id: "v1",  prompt: "Straße",         answer: "ulica",         context: "Die Straße ist lang." },
-      { id: "v2",  prompt: "Haus",            answer: "dom",           context: "Das Haus ist groß." },
-      { id: "v3",  prompt: "Wasser",          answer: "woda",          context: "Ich trinke Wasser." },
-      { id: "v4",  prompt: "Buch",            answer: "książka",       context: "Ich lese ein Buch." },
-      { id: "v5",  prompt: "Schule",          answer: "szkoła",        context: "Die Kinder gehen zur Schule." },
-      { id: "v6",  prompt: "Freund",          answer: "przyjaciel",    context: "Er ist mein Freund." },
-      { id: "v7",  prompt: "Hund",            answer: "pies",          context: "Der Hund ist braun." },
-      { id: "v8",  prompt: "Katze",           answer: "kot",           context: "Die Katze schläft." },
-      { id: "v9",  prompt: "Baum",            answer: "drzewo",        context: "Der Baum ist hoch." },
-      { id: "v10", prompt: "Blume",           answer: "kwiat",         context: "Die Blume ist schön." },
-      { id: "v11", prompt: "Stadt",           answer: "miasto",        context: "Berlin ist eine Stadt." },
-      { id: "v12", prompt: "Himmel",          answer: "niebo",         context: "Der Himmel ist blau." },
-      { id: "v13", prompt: "Essen",           answer: "jedzenie",      context: "Das Essen schmeckt gut." },
-      { id: "v14", prompt: "Arbeit",          answer: "praca",         context: "Ich gehe zur Arbeit." },
-      { id: "v15", prompt: "Zeit",            answer: "czas",          context: "Die Zeit vergeht schnell." },
-      { id: "v16", prompt: "Liebe",           answer: "miłość",        context: "Liebe ist wichtig." },
-      { id: "v17", prompt: "Nacht",           answer: "noc",           context: "Die Nacht ist dunkel." },
-      { id: "v18", prompt: "Morgen",          answer: "rano",          context: "Guten Morgen!" },
-      { id: "v19", prompt: "Küche",           answer: "kuchnia",       context: "Ich koche in der Küche." },
-      { id: "v20", prompt: "Fenster",         answer: "okno",          context: "Das Fenster ist offen." },
-      { id: "v21", prompt: "Glück",           answer: "szczęście",     context: "Ich wünsche dir Glück." },
-      { id: "v22", prompt: "Brücke",          answer: "most",          context: "Die Brücke ist alt." },
-      { id: "v23", prompt: "Vogel",           answer: "ptak",          context: "Der Vogel singt." },
-      { id: "v24", prompt: "Schlüssel",       answer: "klucz",         context: "Wo ist der Schlüssel?" },
-      { id: "v25", prompt: "Frühling",        answer: "wiosna",        context: "Der Frühling kommt." },
-      { id: "v26", prompt: "Herbst",          answer: "jesień",        context: "Im Herbst fallen Blätter." },
-      { id: "v27", prompt: "Mädchen",         answer: "dziewczyna",    context: "Das Mädchen lacht." },
-      { id: "v28", prompt: "Junge",           answer: "chłopiec",      context: "Der Junge spielt." },
-      { id: "v29", prompt: "Tür",             answer: "drzwi",         context: "Die Tür ist geschlossen." },
-      { id: "v30", prompt: "Zug",             answer: "pociąg",        context: "Der Zug fährt ab." },
-    ];
+    let VOCABULARY = [];
+
+    async function loadVocabulary() {
+      const response = await fetch('pol_ lesson 1 + 2.txt');
+      const text = await response.text();
+      const lines = text.split('\n');
+      const vocab = [];
+      let idCounter = 1;
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        // Skip empty lines and metadata lines starting with #
+        if (!trimmed || trimmed.startsWith('#')) continue;
+
+        const parts = trimmed.split('\t');
+        if (parts.length < 2) continue;
+
+        const prompt = decodeHTML(parts[0].trim());
+        const answerRaw = decodeHTML(parts[1].trim());
+        // Strip trailing metadata in parentheses, e.g. "(noun, Masculine)" or "(expression)"
+        // but keep the full string for display
+        const answerClean = answerRaw.replace(/\s*\([^)]*\)\s*$/, '').trim();
+
+        vocab.push({
+          id: 'v' + idCounter++,
+          prompt: prompt,
+          answer: answerClean,
+          answerDisplay: answerRaw
+        });
+      }
+
+      VOCABULARY = vocab;
+    }
+
+    // Decode HTML entities (e.g. &#x27; -> ')
+    function decodeHTML(str) {
+      const el = document.createElement('textarea');
+      el.innerHTML = str;
+      return el.value;
+    }
 
     // =========================================================================
     // STATS STORAGE
@@ -1128,7 +1133,6 @@
     const promptCard = document.getElementById("promptCard");
     const promptLabel = document.getElementById("promptLabel");
     const promptWord = document.getElementById("promptWord");
-    const promptContext = document.getElementById("promptContext");
     const resultInfo = document.getElementById("resultInfo");
     const ocrResult = document.getElementById("ocrResult");
     const correctAnswer = document.getElementById("correctAnswer");
@@ -1178,7 +1182,6 @@
       promptCard.className = "prompt-bar";
       promptLabel.textContent = "PL";
       promptWord.textContent = vocab.prompt;
-      promptContext.textContent = vocab.context;
       resultInfo.className = "result-info";
 
       bottomActions.style.display = "flex";
@@ -1207,7 +1210,8 @@
         // Show result
         ocrResult.textContent = recognized || "(nothing)";
         ocrResult.className = "ocr-text " + (isCorrect ? "" : "wrong-answer");
-        correctAnswer.textContent = currentVocab.answer;
+        correctAnswer.textContent = currentVocab.answerDisplay;
+
         resultInfo.className = "result-info visible";
 
         promptCard.className = "prompt-bar " + (isCorrect ? "result-correct" : "result-wrong");
@@ -1230,7 +1234,7 @@
 
     function showAnswer() {
       if (isShowingResult) return;
-      correctAnswer.textContent = currentVocab.answer;
+      correctAnswer.textContent = currentVocab.answerDisplay;
       ocrResult.textContent = "(peeked)";
       ocrResult.className = "ocr-text wrong-answer";
       resultInfo.className = "result-info visible";
@@ -1333,7 +1337,7 @@
           <div class="vocab-stat-item">
             <div>
               <div class="word">${v.prompt}</div>
-              <div class="translation">${v.answer}</div>
+              <div class="translation">${v.answerDisplay}</div>
             </div>
             <div class="ratio">
               <span style="color:#ef4444;">${again}</span> /
@@ -1379,7 +1383,7 @@
     // =========================================================================
     async function init() {
       resizeCanvas();
-      await initOCR();
+      await Promise.all([initOCR(), loadVocabulary()]);
       nextWord();
     }
 
