@@ -112,6 +112,160 @@
       color: var(--text-muted);
       white-space: nowrap;
       flex-shrink: 0;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: background 0.15s, color 0.15s;
+      position: relative;
+    }
+
+    .prompt-label:hover, .prompt-label:active {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* ---- File Picker Dropdown ---- */
+    .file-picker-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(2px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .file-picker-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .file-picker-dropdown {
+      position: fixed;
+      top: 60px;
+      left: 8px;
+      right: 8px;
+      max-width: 400px;
+      background: var(--surface);
+      border-radius: 14px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+      z-index: 91;
+      padding: 8px;
+      transform: translateY(-10px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .file-picker-overlay.open .file-picker-dropdown {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .file-picker-dropdown h3 {
+      font-size: 13px;
+      font-weight: 700;
+      padding: 6px 10px 4px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .file-picker-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      transition: background 0.15s;
+      gap: 8px;
+    }
+
+    .file-picker-item:hover {
+      background: var(--bg);
+    }
+
+    .file-picker-item.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .file-picker-item .fp-name {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-picker-item .fp-count {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .file-picker-item.active .fp-count {
+      color: rgba(255,255,255,0.7);
+    }
+
+    .file-picker-item .fp-delete {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .file-picker-item .fp-delete:hover {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    .file-picker-item.active .fp-delete {
+      color: rgba(255,255,255,0.6);
+    }
+
+    .file-picker-item.active .fp-delete:hover {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+    }
+
+    .file-picker-import {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 12px;
+      margin-top: 4px;
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+
+    .file-picker-import:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: rgba(108, 127, 248, 0.05);
     }
 
     .prompt-word {
@@ -1037,24 +1191,135 @@
     </div>
   </div>
 
+  <!-- File Picker Dropdown -->
+  <div class="file-picker-overlay" id="filePickerOverlay">
+    <div class="file-picker-dropdown" id="filePickerDropdown">
+      <h3>Vocabulary Files</h3>
+      <div id="filePickerList">
+        <!-- Populated by JS -->
+      </div>
+      <div class="file-picker-import" id="filePickerImportBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Import .txt file
+      </div>
+      <input type="file" id="vocabFileInput" accept=".txt" style="display:none;">
+    </div>
+  </div>
+
   <script>
     // =========================================================================
-    // VOCABULARY DATA - loaded from external file
+    // VOCABULARY DATA - loaded from external file or IndexedDB
     // The user sees an English word/phrase and writes the Polish translation.
     // Polish special characters: ą ć ę ł ń ó ś ź ż
     // =========================================================================
     let VOCABULARY = [];
 
-    async function loadVocabulary() {
-      const response = await fetch('pol_ lesson 1 + 2.txt');
-      const text = await response.text();
+    // ---- Multi-file support: globals & helpers ----
+    const DEFAULT_VOCAB_FILE = 'pol_ lesson 1 + 2.txt';
+    const FILES_REGISTRY_KEY = 'anki_scribe_files';      // JSON array of {slug, name}
+    const ACTIVE_FILE_KEY = 'anki_scribe_active_file';    // slug of last-used file
+    let activeFileSlug = '';                               // current active file slug
+
+    // Sanitize a filename into a safe slug for use as storage key prefix
+    function slugify(filename) {
+      return filename
+        .replace(/\.[^.]+$/, '')          // strip extension
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')      // non-alphanumeric -> underscore
+        .replace(/^_+|_+$/g, '');          // trim leading/trailing underscores
+    }
+
+    // ---- File registry (localStorage) ----
+    function getFileRegistry() {
+      try {
+        const raw = localStorage.getItem(FILES_REGISTRY_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch { return []; }
+    }
+
+    function saveFileRegistry(files) {
+      localStorage.setItem(FILES_REGISTRY_KEY, JSON.stringify(files));
+    }
+
+    function registerFile(slug, displayName) {
+      const files = getFileRegistry();
+      if (!files.find(f => f.slug === slug)) {
+        files.push({ slug, name: displayName });
+        saveFileRegistry(files);
+      }
+    }
+
+    function unregisterFile(slug) {
+      const files = getFileRegistry().filter(f => f.slug !== slug);
+      saveFileRegistry(files);
+    }
+
+    function getActiveFileSlug() {
+      return localStorage.getItem(ACTIVE_FILE_KEY) || '';
+    }
+
+    function setActiveFileSlug(slug) {
+      localStorage.setItem(ACTIVE_FILE_KEY, slug);
+      activeFileSlug = slug;
+    }
+
+    // ---- IndexedDB vocab store ----
+    const VOCAB_DB_NAME = 'anki_scribe_vocab';
+    const VOCAB_DB_VERSION = 1;
+    const VOCAB_STORE_NAME = 'files';
+
+    function openVocabDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(VOCAB_DB_NAME, VOCAB_DB_VERSION);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains(VOCAB_STORE_NAME)) {
+            db.createObjectStore(VOCAB_STORE_NAME, { keyPath: 'slug' });
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function storeVocabFile(slug, displayName, textContent) {
+      const db = await openVocabDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(VOCAB_STORE_NAME, 'readwrite');
+        tx.objectStore(VOCAB_STORE_NAME).put({ slug, name: displayName, text: textContent });
+        tx.oncomplete = () => { registerFile(slug, displayName); resolve(); };
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function loadVocabFile(slug) {
+      const db = await openVocabDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(VOCAB_STORE_NAME, 'readonly');
+        const req = tx.objectStore(VOCAB_STORE_NAME).get(slug);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function deleteVocabFile(slug) {
+      const db = await openVocabDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(VOCAB_STORE_NAME, 'readwrite');
+        tx.objectStore(VOCAB_STORE_NAME).delete(slug);
+        tx.oncomplete = () => { unregisterFile(slug); resolve(); };
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    // ---- Parse vocabulary text into array (pure function, no side effects) ----
+    function parseVocabularyText(text) {
       const lines = text.split('\n');
       const vocab = [];
       let idCounter = 1;
 
       for (const line of lines) {
         const trimmed = line.trim();
-        // Skip empty lines and metadata lines starting with #
         if (!trimmed || trimmed.startsWith('#')) continue;
 
         const parts = trimmed.split('\t');
@@ -1062,8 +1327,6 @@
 
         const prompt = decodeHTML(parts[0].trim());
         const answerRaw = decodeHTML(parts[1].trim());
-        // Strip trailing metadata in parentheses, e.g. "(noun, Masculine)" or "(expression)"
-        // but keep the full string for display
         const answerClean = answerRaw.replace(/\s*\([^)]*\)\s*$/, '').trim();
 
         vocab.push({
@@ -1073,8 +1336,41 @@
           answerDisplay: answerRaw
         });
       }
+      return vocab;
+    }
 
-      VOCABULARY = vocab;
+    // Fetch the default vocab file from the server, store it in IndexedDB, and return parsed vocab
+    async function fetchAndStoreDefaultVocab() {
+      const response = await fetch(DEFAULT_VOCAB_FILE);
+      const text = await response.text();
+      const slug = slugify(DEFAULT_VOCAB_FILE);
+      const displayName = DEFAULT_VOCAB_FILE.replace(/\.[^.]+$/, '');
+      await storeVocabFile(slug, displayName, text);
+      return { slug, displayName, vocab: parseVocabularyText(text) };
+    }
+
+    // Load vocabulary for a given slug from IndexedDB, parse, and set as active
+    async function loadVocabularyForSlug(slug) {
+      const record = await loadVocabFile(slug);
+      if (!record) return null;
+      const vocab = parseVocabularyText(record.text);
+      return { slug: record.slug, displayName: record.name, vocab };
+    }
+
+    // Switch to a different vocabulary file: set active, reload vocab, resolve batch
+    async function switchVocabFile(slug) {
+      const result = await loadVocabularyForSlug(slug);
+      if (!result) return false;
+      VOCABULARY = result.vocab;
+      setActiveFileSlug(slug);
+      resolveBatch();
+      updateBatchIndicator();
+      updateProgressRing();
+      updateFilePickerLabel();
+      lastCheckResult = null;
+      const vocab = pickNextVocab();
+      showVocab(vocab);
+      return true;
     }
 
     // Decode HTML entities (e.g. &#x27; -> ')
@@ -1084,10 +1380,44 @@
       return el.value;
     }
 
+    // Update the prompt label to show abbreviated active file name
+    function updateFilePickerLabel() {
+      const el = document.getElementById('promptLabel');
+      if (!el) return;
+      const files = getFileRegistry();
+      const file = files.find(f => f.slug === activeFileSlug);
+      // Show short name: first 12 chars of display name, or "PL" fallback
+      const name = file ? file.name : 'PL';
+      // Abbreviate: take first ~12 chars
+      el.textContent = name.length > 14 ? name.substring(0, 12) + '..' : name;
+      el.title = name;
+    }
+
     // =========================================================================
     // STATS STORAGE
     // =========================================================================
-    const STORAGE_KEY = "anki_scribe_stats";
+    // Per-file storage key helpers
+    function getStorageKey() { return 'anki_scribe_stats_' + activeFileSlug; }
+    function getBatchKey()   { return 'anki_scribe_batch_' + activeFileSlug; }
+    function getBatchSizeKey() { return 'anki_scribe_batch_size_' + activeFileSlug; }
+
+    // Migrate legacy (pre-multi-file) stats to a per-file key on first run
+    function migrateLegacyStats(slug) {
+      const legacyStats = localStorage.getItem('anki_scribe_stats');
+      const legacyBatch = localStorage.getItem('anki_scribe_batch');
+      const legacyBatchSize = localStorage.getItem('anki_scribe_batch_size');
+      const newStatsKey = 'anki_scribe_stats_' + slug;
+      // Only migrate if new key doesn't exist yet and legacy data is present
+      if (!localStorage.getItem(newStatsKey) && legacyStats) {
+        localStorage.setItem(newStatsKey, legacyStats);
+        if (legacyBatch) localStorage.setItem('anki_scribe_batch_' + slug, legacyBatch);
+        if (legacyBatchSize) localStorage.setItem('anki_scribe_batch_size_' + slug, legacyBatchSize);
+        // Remove legacy keys after successful migration
+        localStorage.removeItem('anki_scribe_stats');
+        localStorage.removeItem('anki_scribe_batch');
+        localStorage.removeItem('anki_scribe_batch_size');
+      }
+    }
 
     // Rating intervals in milliseconds
     const RATING_INTERVALS = {
@@ -1099,7 +1429,7 @@
 
     function loadStats() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = localStorage.getItem(getStorageKey());
         return raw ? JSON.parse(raw) : {};
       } catch {
         return {};
@@ -1107,7 +1437,7 @@
     }
 
     function saveStats(stats) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
+      localStorage.setItem(getStorageKey(), JSON.stringify(stats));
     }
 
     function recordAttempt(vocabId, rating) {
@@ -1136,14 +1466,16 @@
     }
 
     function clearStats() {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(getStorageKey());
     }
 
     // Export all learning data as a JSON file download
     function exportStats() {
       const data = {
-        version: 1,
+        version: 2,
         exportedAt: new Date().toISOString(),
+        activeFile: activeFileSlug,
+        files: getFileRegistry(),
         stats: loadStats(),
         batch: loadBatch(),
         batchSize: getBatchSize()
@@ -1186,7 +1518,6 @@
               }
             } else {
               // Merge: for each word, keep whichever has more attempts.
-              // If the imported word has more attempts, use it entirely.
               const current = loadStats();
               const incoming = data.stats;
               for (const id of Object.keys(incoming)) {
@@ -1197,7 +1528,6 @@
                 }
               }
               saveStats(current);
-              // Don't overwrite batch on merge
             }
 
             // Refresh batch and UI
@@ -1222,15 +1552,13 @@
     // The batch is persisted in localStorage and only changes when the user
     // explicitly skips it or all words are learned.
     // =========================================================================
-    const BATCH_KEY = "anki_scribe_batch";
-    const BATCH_SIZE_KEY = "anki_scribe_batch_size";
     const DEFAULT_BATCH_SIZE = 20;
 
     let currentBatch = []; // array of vocab objects in the current batch
 
     function getBatchSize() {
       try {
-        const v = parseInt(localStorage.getItem(BATCH_SIZE_KEY));
+        const v = parseInt(localStorage.getItem(getBatchSizeKey()));
         return (v && v > 0) ? v : DEFAULT_BATCH_SIZE;
       } catch {
         return DEFAULT_BATCH_SIZE;
@@ -1239,13 +1567,13 @@
 
     function setBatchSize(size) {
       const s = Math.max(1, Math.min(size, VOCABULARY.length || 999));
-      localStorage.setItem(BATCH_SIZE_KEY, s);
+      localStorage.setItem(getBatchSizeKey(), s);
       return s;
     }
 
     function loadBatch() {
       try {
-        const raw = localStorage.getItem(BATCH_KEY);
+        const raw = localStorage.getItem(getBatchKey());
         return raw ? JSON.parse(raw) : null;
       } catch {
         return null;
@@ -1253,7 +1581,7 @@
     }
 
     function saveBatch(batchIds) {
-      localStorage.setItem(BATCH_KEY, JSON.stringify(batchIds));
+      localStorage.setItem(getBatchKey(), JSON.stringify(batchIds));
     }
 
     // Pick a new random batch of N words from the full vocabulary,
@@ -1881,7 +2209,7 @@
       isShowingResult = false;
 
       promptCard.className = "prompt-bar";
-      promptLabel.textContent = "PL";
+      updateFilePickerLabel();
       promptWord.textContent = vocab.prompt;
       resultInfo.className = "result-info";
       updateBatchIndicator();
@@ -2211,13 +2539,177 @@
     });
 
     // =========================================================================
+    // FILE PICKER
+    // =========================================================================
+    const filePickerOverlay = document.getElementById("filePickerOverlay");
+    const filePickerList = document.getElementById("filePickerList");
+    const vocabFileInput = document.getElementById("vocabFileInput");
+
+    function openFilePicker() {
+      renderFilePickerList();
+      filePickerOverlay.classList.add("open");
+    }
+
+    function closeFilePicker() {
+      filePickerOverlay.classList.remove("open");
+    }
+
+    function renderFilePickerList() {
+      const files = getFileRegistry();
+      let html = '';
+      for (const f of files) {
+        const isActive = f.slug === activeFileSlug;
+        html += `
+          <div class="file-picker-item ${isActive ? 'active' : ''}" data-slug="${f.slug}">
+            <span class="fp-name">${f.name}</span>
+            ${files.length > 1 ? `<button class="fp-delete" data-delete-slug="${f.slug}" title="Delete this file">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M5 6l1 14h12l1-14"/></svg>
+            </button>` : ''}
+          </div>
+        `;
+      }
+      filePickerList.innerHTML = html;
+
+      // Click handlers for file items
+      filePickerList.querySelectorAll('.file-picker-item').forEach(item => {
+        item.addEventListener('click', async (e) => {
+          // Don't switch if clicking the delete button
+          if (e.target.closest('.fp-delete')) return;
+          const slug = item.dataset.slug;
+          if (slug === activeFileSlug) {
+            closeFilePicker();
+            return;
+          }
+          closeFilePicker();
+          await switchVocabFile(slug);
+        });
+      });
+
+      // Delete handlers
+      filePickerList.querySelectorAll('.fp-delete').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const slug = btn.dataset.deleteSlug;
+          const files = getFileRegistry();
+          const file = files.find(f => f.slug === slug);
+          if (!confirm(`Delete "${file ? file.name : slug}" and its statistics?`)) return;
+
+          // Delete from IndexedDB and registry
+          await deleteVocabFile(slug);
+          // Also remove per-file stats/batch from localStorage
+          localStorage.removeItem('anki_scribe_stats_' + slug);
+          localStorage.removeItem('anki_scribe_batch_' + slug);
+          localStorage.removeItem('anki_scribe_batch_size_' + slug);
+
+          // If we deleted the active file, switch to another
+          if (slug === activeFileSlug) {
+            const remaining = getFileRegistry();
+            if (remaining.length > 0) {
+              await switchVocabFile(remaining[0].slug);
+            }
+          }
+          renderFilePickerList();
+        });
+      });
+    }
+
+    // Open picker when clicking the prompt label
+    document.getElementById('promptLabel').addEventListener('click', () => {
+      openFilePicker();
+    });
+
+    // Close picker when clicking overlay background
+    filePickerOverlay.addEventListener('click', (e) => {
+      if (e.target === filePickerOverlay) {
+        closeFilePicker();
+      }
+    });
+
+    // Import new vocab file
+    document.getElementById('filePickerImportBtn').addEventListener('click', () => {
+      vocabFileInput.click();
+    });
+
+    vocabFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const slug = slugify(file.name);
+        const displayName = file.name.replace(/\.[^.]+$/, '');
+
+        // Check if slug already exists
+        const existing = getFileRegistry().find(f => f.slug === slug);
+        if (existing) {
+          if (!confirm(`A file "${existing.name}" already exists. Overwrite it?`)) {
+            vocabFileInput.value = '';
+            return;
+          }
+        }
+
+        // Validate: try parsing to ensure it has vocab entries
+        const vocab = parseVocabularyText(text);
+        if (vocab.length === 0) {
+          alert('No vocabulary entries found in this file.\nExpected format: English[TAB]Translation (one per line).');
+          vocabFileInput.value = '';
+          return;
+        }
+
+        await storeVocabFile(slug, displayName, text);
+        closeFilePicker();
+        await switchVocabFile(slug);
+      } catch (err) {
+        console.error('Failed to import vocab file:', err);
+        alert('Failed to import file: ' + err.message);
+      }
+
+      vocabFileInput.value = '';
+    });
+
+    // =========================================================================
     // INIT
     // =========================================================================
     async function init() {
       resizeCanvas();
-      await Promise.all([initOCR(), loadVocabulary()]);
+
+      // Determine which vocab file to load
+      const savedSlug = getActiveFileSlug();
+      let vocabLoaded = false;
+
+      if (savedSlug) {
+        // Try loading the previously active file from IndexedDB
+        const result = await loadVocabularyForSlug(savedSlug);
+        if (result) {
+          VOCABULARY = result.vocab;
+          activeFileSlug = savedSlug;
+          vocabLoaded = true;
+        }
+      }
+
+      if (!vocabLoaded) {
+        // First run or missing file: fetch default, store in IndexedDB
+        try {
+          const result = await fetchAndStoreDefaultVocab();
+          VOCABULARY = result.vocab;
+          activeFileSlug = result.slug;
+          // Migrate any legacy stats from before multi-file support
+          migrateLegacyStats(result.slug);
+        } catch (err) {
+          console.error('Failed to load default vocabulary:', err);
+          VOCABULARY = [];
+        }
+      }
+
+      setActiveFileSlug(activeFileSlug);
+
+      // Init OCR in parallel (vocab is already loaded above)
+      await initOCR();
+
       resolveBatch();
-      nextWord();
+      updateFilePickerLabel();
+      const vocab = pickNextVocab();
+      if (vocab) showVocab(vocab);
     }
 
     init();
