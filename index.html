@@ -675,6 +675,148 @@
       font-size: 12px;
     }
 
+    /* ---- Progress Ring (prompt bar) ---- */
+    .progress-ring-container {
+      position: relative;
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+    }
+
+    .progress-ring-container svg {
+      transform: rotate(-90deg);
+      width: 36px;
+      height: 36px;
+    }
+
+    .progress-ring-bg {
+      fill: none;
+      stroke: var(--border);
+      stroke-width: 3;
+    }
+
+    .progress-ring-fill {
+      fill: none;
+      stroke-width: 3;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.6s ease, stroke 0.4s ease;
+    }
+
+    .progress-ring-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text);
+      /* undo the SVG rotation for the text */
+      pointer-events: none;
+    }
+
+    /* ---- Progress Overview (stats modal) ---- */
+    .progress-overview {
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .progress-overview h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .progress-hero {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .progress-ring-large {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      flex-shrink: 0;
+    }
+
+    .progress-ring-large svg {
+      transform: rotate(-90deg);
+      width: 80px;
+      height: 80px;
+    }
+
+    .progress-ring-large .progress-ring-bg {
+      stroke-width: 5;
+    }
+
+    .progress-ring-large .progress-ring-fill {
+      stroke-width: 5;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.8s ease, stroke 0.4s ease;
+    }
+
+    .progress-ring-large .progress-ring-text {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .progress-categories {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .progress-cat {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .progress-cat .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .progress-cat .dot.mastered { background: #22c55e; }
+    .progress-cat .dot.learning { background: #f59e0b; }
+    .progress-cat .dot.unseen { background: var(--border); }
+
+    .progress-cat .cat-label {
+      flex: 1;
+      font-weight: 500;
+    }
+
+    .progress-cat .cat-count {
+      font-weight: 700;
+      min-width: 28px;
+      text-align: right;
+    }
+
+    /* Segmented progress bar */
+    .progress-segmented-bar {
+      display: flex;
+      height: 10px;
+      border-radius: 5px;
+      overflow: hidden;
+      background: var(--border);
+    }
+
+    .progress-segmented-bar .seg {
+      height: 100%;
+      transition: width 0.6s ease;
+    }
+
+    .progress-segmented-bar .seg.mastered { background: #22c55e; }
+    .progress-segmented-bar .seg.learning { background: #f59e0b; }
+    .progress-segmented-bar .seg.unseen { background: var(--border); }
+
     /* ---- Loading overlay ---- */
     .loading-overlay {
       position: fixed;
@@ -742,6 +884,14 @@
       <span class="prompt-label" id="promptLabel">PL</span>
       <span class="prompt-word" id="promptWord">everything ok</span>
       <span class="batch-indicator" id="batchIndicator">20/228</span>
+      <div class="progress-ring-container" id="progressRing" title="Batch mastery">
+        <svg viewBox="0 0 36 36">
+          <circle class="progress-ring-bg" cx="18" cy="18" r="15" />
+          <circle class="progress-ring-fill" id="progressRingFill" cx="18" cy="18" r="15"
+            stroke-dasharray="94.25" stroke-dashoffset="94.25" stroke="#22c55e" />
+        </svg>
+        <div class="progress-ring-text" id="progressRingText">0%</div>
+      </div>
       <button class="btn-skip-word" id="btnSkipWord" title="Skip this word" style="display: flex;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"></polyline><polyline points="6 17 11 12 6 7"></polyline></svg>
       </button>
@@ -1033,6 +1183,136 @@
       if (el) {
         el.textContent = currentBatch.length + "/" + VOCABULARY.length;
       }
+    }
+
+    // =========================================================================
+    // PROGRESS TRACKING
+    // Calculates mastery per word and aggregates for batch / overall display.
+    // =========================================================================
+
+    // Mastery score for a single word based on its latest rating.
+    // Returns 0..100.
+    const MASTERY_SCORES = { again: 10, hard: 40, good: 75, easy: 100 };
+
+    function getWordMastery(vocabId) {
+      const stats = loadStats();
+      const s = stats[vocabId];
+      if (!s || !s.history || s.history.length === 0) return 0; // unseen
+      const lastRating = s.history[s.history.length - 1].rating;
+      return MASTERY_SCORES[lastRating] || 0;
+    }
+
+    // Average mastery across the current batch (0..100)
+    function calculateBatchMastery() {
+      if (currentBatch.length === 0) return 0;
+      const total = currentBatch.reduce((sum, v) => sum + getWordMastery(v.id), 0);
+      return Math.round(total / currentBatch.length);
+    }
+
+    // Categorize ALL vocabulary into mastered / learning / unseen
+    function calculateOverallProgress() {
+      const stats = loadStats();
+      let mastered = 0;
+      let learning = 0;
+      let unseen = 0;
+      for (const v of VOCABULARY) {
+        const s = stats[v.id];
+        if (!s || !s.history || s.history.length === 0) {
+          unseen++;
+        } else {
+          const lastRating = s.history[s.history.length - 1].rating;
+          if (lastRating === "easy" || lastRating === "good") {
+            mastered++;
+          } else {
+            learning++;
+          }
+        }
+      }
+      const totalMastery = VOCABULARY.length > 0
+        ? Math.round(VOCABULARY.reduce((sum, v) => sum + getWordMastery(v.id), 0) / VOCABULARY.length)
+        : 0;
+      return { mastered, learning, unseen, total: VOCABULARY.length, totalMastery };
+    }
+
+    // Get gradient color for a mastery percentage (red -> amber -> green)
+    function getMasteryColor(pct) {
+      if (pct <= 33) {
+        // red to amber: #ef4444 -> #f59e0b
+        const t = pct / 33;
+        const r = Math.round(239 + (245 - 239) * t);
+        const g = Math.round(68 + (158 - 68) * t);
+        const b = Math.round(68 + (11 - 68) * t);
+        return `rgb(${r},${g},${b})`;
+      } else if (pct <= 66) {
+        // amber to green: #f59e0b -> #22c55e
+        const t = (pct - 33) / 33;
+        const r = Math.round(245 + (34 - 245) * t);
+        const g = Math.round(158 + (197 - 158) * t);
+        const b = Math.round(11 + (94 - 11) * t);
+        return `rgb(${r},${g},${b})`;
+      } else {
+        // green zone
+        return '#22c55e';
+      }
+    }
+
+    // Update the small progress ring in the prompt bar
+    function updateProgressRing() {
+      const pct = calculateBatchMastery();
+      const fill = document.getElementById("progressRingFill");
+      const text = document.getElementById("progressRingText");
+      if (!fill || !text) return;
+      const circumference = 2 * Math.PI * 15; // r=15 => ~94.25
+      const offset = circumference - (pct / 100) * circumference;
+      fill.setAttribute("stroke-dashoffset", offset);
+      fill.setAttribute("stroke", getMasteryColor(pct));
+      text.textContent = pct + "%";
+    }
+
+    // Render the progress overview section for the stats modal
+    function renderProgressOverview() {
+      const p = calculateOverallProgress();
+      const circumference = 2 * Math.PI * 34; // r=34 for the large ring
+      const offset = circumference - (p.totalMastery / 100) * circumference;
+      const color = getMasteryColor(p.totalMastery);
+      const masteredPct = p.total > 0 ? (p.mastered / p.total * 100) : 0;
+      const learningPct = p.total > 0 ? (p.learning / p.total * 100) : 0;
+      const unseenPct = p.total > 0 ? (p.unseen / p.total * 100) : 0;
+
+      return `
+        <div class="progress-hero">
+          <div class="progress-ring-large">
+            <svg viewBox="0 0 80 80">
+              <circle class="progress-ring-bg" cx="40" cy="40" r="34" />
+              <circle class="progress-ring-fill" cx="40" cy="40" r="34"
+                stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke="${color}" />
+            </svg>
+            <div class="progress-ring-text">${p.totalMastery}%</div>
+          </div>
+          <div class="progress-categories">
+            <div class="progress-cat">
+              <span class="dot mastered"></span>
+              <span class="cat-label">Mastered</span>
+              <span class="cat-count">${p.mastered}</span>
+            </div>
+            <div class="progress-cat">
+              <span class="dot learning"></span>
+              <span class="cat-label">Learning</span>
+              <span class="cat-count">${p.learning}</span>
+            </div>
+            <div class="progress-cat">
+              <span class="dot unseen"></span>
+              <span class="cat-label">Unseen</span>
+              <span class="cat-count">${p.unseen}</span>
+            </div>
+          </div>
+        </div>
+        <div class="progress-segmented-bar">
+          <div class="seg mastered" style="width:${masteredPct}%"></div>
+          <div class="seg learning" style="width:${learningPct}%"></div>
+          <div class="seg unseen" style="width:${unseenPct}%"></div>
+        </div>
+      `;
     }
 
     // =========================================================================
@@ -1456,6 +1736,7 @@
       promptWord.textContent = vocab.prompt;
       resultInfo.className = "result-info";
       updateBatchIndicator();
+      updateProgressRing();
 
       // Show skip button only when not showing result
       document.getElementById("btnSkipWord").style.display = "flex";
@@ -1591,6 +1872,11 @@
       });
 
       let html = `
+        <div class="progress-overview">
+          <h3>Overall Progress</h3>
+          ${renderProgressOverview()}
+        </div>
+
         <div class="settings-section">
           <h3>Batch Settings</h3>
           <div class="setting-row">
