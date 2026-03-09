@@ -125,9 +125,6 @@
       text-overflow: ellipsis;
     }
 
-    .prompt-context {
-      display: none; /* Hidden on mobile to save space */
-    }
 
     .prompt-stats-btn {
       flex-shrink: 0;
@@ -519,6 +516,104 @@
       background: var(--danger-bg);
     }
 
+    /* ---- Skip word button (in prompt bar) ---- */
+    .btn-skip-word {
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: var(--surface);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 18px;
+      transition: background 0.15s, color 0.15s;
+      box-shadow: var(--shadow);
+      flex-shrink: 0;
+    }
+
+    .btn-skip-word:hover, .btn-skip-word:active {
+      background: #f59e0b;
+      color: #fff;
+    }
+
+    /* ---- Batch indicator ---- */
+    .batch-indicator {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+      letter-spacing: 0.3px;
+    }
+
+    /* ---- Settings section in stats modal ---- */
+    .settings-section {
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .settings-section h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .setting-row label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .setting-row input[type="number"] {
+      width: 70px;
+      height: 36px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      text-align: center;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .setting-row input[type="number"]:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-skip-batch {
+      width: 100%;
+      height: 44px;
+      border: 2px solid #f59e0b;
+      border-radius: 10px;
+      background: transparent;
+      color: #f59e0b;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-bottom: 4px;
+    }
+
+    .btn-skip-batch:hover {
+      background: #fef3c7;
+    }
+
     /* ---- Loading overlay ---- */
     .loading-overlay {
       position: fixed;
@@ -569,11 +664,11 @@
 <body>
 
   <!-- Loading screen while Tesseract initializes -->
-  <div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-overlay hidden" id="loadingOverlay">
     <h2>Anki Scribe</h2>
-    <p id="loadingStatus">Initializing OCR engine...</p>
+    <p id="loadingStatus">Ready!</p>
     <div class="loading-bar">
-      <div class="loading-bar-inner" id="loadingBar"></div>
+      <div class="loading-bar-inner" id="loadingBar" style="width: 100%;"></div>
     </div>
   </div>
 
@@ -584,10 +679,13 @@
     <!-- Compact prompt bar: label + word + stats icon in one row -->
     <div class="prompt-bar" id="promptCard">
       <span class="prompt-label" id="promptLabel">PL</span>
-      <span class="prompt-word" id="promptWord">Straße</span>
-      <span class="prompt-context" id="promptContext"></span>
+      <span class="prompt-word" id="promptWord">everything ok</span>
+      <span class="batch-indicator" id="batchIndicator">20/228</span>
+      <button class="btn-skip-word" id="btnSkipWord" title="Skip this word" style="display: flex;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"></polyline><polyline points="6 17 11 12 6 7"></polyline></svg>
+      </button>
       <button class="btn-icon prompt-stats-btn" id="btnStats" title="Stats">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9"></rect><rect x="10" y="7" width="4" height="14"></rect><rect x="17" y="3" width="4" height="18"></rect></svg>
       </button>
     </div>
 
@@ -600,8 +698,8 @@
     <!-- Drawing area + check button -->
     <div class="drawing-area">
       <div class="canvas-wrapper" id="canvasWrapper">
-        <canvas id="drawCanvas"></canvas>
-        <div class="canvas-placeholder" id="canvasPlaceholder">Write your<br>answer here</div>
+        <canvas id="drawCanvas" width="2130" height="1655"></canvas>
+        <div class="canvas-placeholder hidden" id="canvasPlaceholder">Write your<br>answer here</div>
       </div>
       <div class="check-btn-wrapper">
         <button class="btn-check" id="btnCheck">CHECK</button>
@@ -609,13 +707,13 @@
     </div>
 
     <!-- Bottom actions -->
-    <div class="bottom-actions" id="bottomActions">
+    <div class="bottom-actions" id="bottomActions" style="display: flex;">
       <button class="btn btn-secondary" id="btnShowAnswer">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
         Show
       </button>
       <button class="btn btn-secondary" id="btnClear">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M5 6l1 14h12l1-14"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M5 6l1 14h12l1-14"></path></svg>
         Clear
       </button>
     </div>
@@ -647,7 +745,7 @@
       <div class="modal-header">
         <h2>Statistics</h2>
         <button class="btn-icon" id="btnCloseStats">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
       <div class="modal-body" id="statsBody">
@@ -658,42 +756,50 @@
 
   <script>
     // =========================================================================
-    // VOCABULARY DATA (mockup - German to Polish)
-    // The user sees a German word and writes the Polish translation.
+    // VOCABULARY DATA - loaded from external file
+    // The user sees an English word/phrase and writes the Polish translation.
     // Polish special characters: ą ć ę ł ń ó ś ź ż
     // =========================================================================
-    const VOCABULARY = [
-      { id: "v1",  prompt: "Straße",         answer: "ulica",         context: "Die Straße ist lang." },
-      { id: "v2",  prompt: "Haus",            answer: "dom",           context: "Das Haus ist groß." },
-      { id: "v3",  prompt: "Wasser",          answer: "woda",          context: "Ich trinke Wasser." },
-      { id: "v4",  prompt: "Buch",            answer: "książka",       context: "Ich lese ein Buch." },
-      { id: "v5",  prompt: "Schule",          answer: "szkoła",        context: "Die Kinder gehen zur Schule." },
-      { id: "v6",  prompt: "Freund",          answer: "przyjaciel",    context: "Er ist mein Freund." },
-      { id: "v7",  prompt: "Hund",            answer: "pies",          context: "Der Hund ist braun." },
-      { id: "v8",  prompt: "Katze",           answer: "kot",           context: "Die Katze schläft." },
-      { id: "v9",  prompt: "Baum",            answer: "drzewo",        context: "Der Baum ist hoch." },
-      { id: "v10", prompt: "Blume",           answer: "kwiat",         context: "Die Blume ist schön." },
-      { id: "v11", prompt: "Stadt",           answer: "miasto",        context: "Berlin ist eine Stadt." },
-      { id: "v12", prompt: "Himmel",          answer: "niebo",         context: "Der Himmel ist blau." },
-      { id: "v13", prompt: "Essen",           answer: "jedzenie",      context: "Das Essen schmeckt gut." },
-      { id: "v14", prompt: "Arbeit",          answer: "praca",         context: "Ich gehe zur Arbeit." },
-      { id: "v15", prompt: "Zeit",            answer: "czas",          context: "Die Zeit vergeht schnell." },
-      { id: "v16", prompt: "Liebe",           answer: "miłość",        context: "Liebe ist wichtig." },
-      { id: "v17", prompt: "Nacht",           answer: "noc",           context: "Die Nacht ist dunkel." },
-      { id: "v18", prompt: "Morgen",          answer: "rano",          context: "Guten Morgen!" },
-      { id: "v19", prompt: "Küche",           answer: "kuchnia",       context: "Ich koche in der Küche." },
-      { id: "v20", prompt: "Fenster",         answer: "okno",          context: "Das Fenster ist offen." },
-      { id: "v21", prompt: "Glück",           answer: "szczęście",     context: "Ich wünsche dir Glück." },
-      { id: "v22", prompt: "Brücke",          answer: "most",          context: "Die Brücke ist alt." },
-      { id: "v23", prompt: "Vogel",           answer: "ptak",          context: "Der Vogel singt." },
-      { id: "v24", prompt: "Schlüssel",       answer: "klucz",         context: "Wo ist der Schlüssel?" },
-      { id: "v25", prompt: "Frühling",        answer: "wiosna",        context: "Der Frühling kommt." },
-      { id: "v26", prompt: "Herbst",          answer: "jesień",        context: "Im Herbst fallen Blätter." },
-      { id: "v27", prompt: "Mädchen",         answer: "dziewczyna",    context: "Das Mädchen lacht." },
-      { id: "v28", prompt: "Junge",           answer: "chłopiec",      context: "Der Junge spielt." },
-      { id: "v29", prompt: "Tür",             answer: "drzwi",         context: "Die Tür ist geschlossen." },
-      { id: "v30", prompt: "Zug",             answer: "pociąg",        context: "Der Zug fährt ab." },
-    ];
+    let VOCABULARY = [];
+
+    async function loadVocabulary() {
+      const response = await fetch('pol_ lesson 1 + 2.txt');
+      const text = await response.text();
+      const lines = text.split('\n');
+      const vocab = [];
+      let idCounter = 1;
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        // Skip empty lines and metadata lines starting with #
+        if (!trimmed || trimmed.startsWith('#')) continue;
+
+        const parts = trimmed.split('\t');
+        if (parts.length < 2) continue;
+
+        const prompt = decodeHTML(parts[0].trim());
+        const answerRaw = decodeHTML(parts[1].trim());
+        // Strip trailing metadata in parentheses, e.g. "(noun, Masculine)" or "(expression)"
+        // but keep the full string for display
+        const answerClean = answerRaw.replace(/\s*\([^)]*\)\s*$/, '').trim();
+
+        vocab.push({
+          id: 'v' + idCounter++,
+          prompt: prompt,
+          answer: answerClean,
+          answerDisplay: answerRaw
+        });
+      }
+
+      VOCABULARY = vocab;
+    }
+
+    // Decode HTML entities (e.g. &#x27; -> ')
+    function decodeHTML(str) {
+      const el = document.createElement('textarea');
+      el.innerHTML = str;
+      return el.value;
+    }
 
     // =========================================================================
     // STATS STORAGE
@@ -748,6 +854,124 @@
 
     function clearStats() {
       localStorage.removeItem(STORAGE_KEY);
+    }
+
+    // =========================================================================
+    // BATCH SYSTEM
+    // Limits active vocabulary to a small subset (batch) for focused learning.
+    // The batch is persisted in localStorage and only changes when the user
+    // explicitly skips it or all words are learned.
+    // =========================================================================
+    const BATCH_KEY = "anki_scribe_batch";
+    const BATCH_SIZE_KEY = "anki_scribe_batch_size";
+    const DEFAULT_BATCH_SIZE = 20;
+
+    let currentBatch = []; // array of vocab objects in the current batch
+
+    function getBatchSize() {
+      try {
+        const v = parseInt(localStorage.getItem(BATCH_SIZE_KEY));
+        return (v && v > 0) ? v : DEFAULT_BATCH_SIZE;
+      } catch {
+        return DEFAULT_BATCH_SIZE;
+      }
+    }
+
+    function setBatchSize(size) {
+      const s = Math.max(1, Math.min(size, VOCABULARY.length || 999));
+      localStorage.setItem(BATCH_SIZE_KEY, s);
+      return s;
+    }
+
+    function loadBatch() {
+      try {
+        const raw = localStorage.getItem(BATCH_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function saveBatch(batchIds) {
+      localStorage.setItem(BATCH_KEY, JSON.stringify(batchIds));
+    }
+
+    // Pick a new random batch of N words from the full vocabulary,
+    // preferring words that haven't been practiced much.
+    function generateNewBatch() {
+      const size = getBatchSize();
+      const stats = loadStats();
+      // Sort vocabulary: least practiced first, then shuffle within tiers
+      const sorted = [...VOCABULARY].map(v => {
+        const s = stats[v.id];
+        const attempts = s ? s.attempts : 0;
+        const correctRate = s && s.attempts > 0 ? s.correct / s.attempts : 0;
+        return { vocab: v, attempts, correctRate, rand: Math.random() };
+      });
+      // Primary sort: fewer attempts first. Secondary: lower correct rate. Tertiary: random.
+      sorted.sort((a, b) => {
+        if (a.attempts !== b.attempts) return a.attempts - b.attempts;
+        if (a.correctRate !== b.correctRate) return a.correctRate - b.correctRate;
+        return a.rand - b.rand;
+      });
+      const picked = sorted.slice(0, Math.min(size, sorted.length));
+      const batchIds = picked.map(p => p.vocab.id);
+      saveBatch(batchIds);
+      return batchIds;
+    }
+
+    // Resolve batch IDs to vocab objects. Returns the active batch.
+    function resolveBatch() {
+      let batchIds = loadBatch();
+      if (!batchIds || batchIds.length === 0) {
+        batchIds = generateNewBatch();
+      }
+      // Filter to only IDs that still exist in VOCABULARY
+      const vocabMap = new Map(VOCABULARY.map(v => [v.id, v]));
+      currentBatch = batchIds.map(id => vocabMap.get(id)).filter(Boolean);
+      // If the batch is empty after filtering (e.g. vocab file changed), regenerate
+      if (currentBatch.length === 0) {
+        batchIds = generateNewBatch();
+        currentBatch = batchIds.map(id => vocabMap.get(id)).filter(Boolean);
+      }
+      return currentBatch;
+    }
+
+    function skipCurrentBatch() {
+      generateNewBatch();
+      resolveBatch();
+      lastCheckResult = null;
+      const vocab = pickNextVocab();
+      showVocab(vocab);
+    }
+
+    // Replace a single word in the current batch with a new one from outside the batch
+    function skipWordInBatch(vocabId) {
+      let batchIds = loadBatch() || [];
+      const batchSet = new Set(batchIds);
+      // Find candidates not in the current batch
+      const candidates = VOCABULARY.filter(v => !batchSet.has(v.id));
+      if (candidates.length === 0) return; // no replacement available
+      // Pick a random replacement, preferring less-practiced words
+      const stats = loadStats();
+      const scored = candidates.map(v => {
+        const s = stats[v.id];
+        const attempts = s ? s.attempts : 0;
+        return { vocab: v, score: Math.random() - attempts * 0.1 };
+      });
+      scored.sort((a, b) => b.score - a.score);
+      const replacement = scored[0].vocab;
+      // Replace the skipped word
+      batchIds = batchIds.map(id => id === vocabId ? replacement.id : id);
+      saveBatch(batchIds);
+      resolveBatch();
+    }
+
+    function updateBatchIndicator() {
+      const el = document.getElementById("batchIndicator");
+      if (el) {
+        el.textContent = currentBatch.length + "/" + VOCABULARY.length;
+      }
     }
 
     // =========================================================================
@@ -1119,7 +1343,6 @@
     const promptCard = document.getElementById("promptCard");
     const promptLabel = document.getElementById("promptLabel");
     const promptWord = document.getElementById("promptWord");
-    const promptContext = document.getElementById("promptContext");
     const resultInfo = document.getElementById("resultInfo");
     const ocrResult = document.getElementById("ocrResult");
     const correctAnswer = document.getElementById("correctAnswer");
@@ -1130,10 +1353,11 @@
     const nextActions = document.getElementById("nextActions");
 
     function pickNextVocab() {
+      const pool = currentBatch.length > 0 ? currentBatch : VOCABULARY;
       const stats = loadStats();
       const now = Date.now();
       // Weight selection: prioritize due items, less practiced, and more wrong answers
-      const weighted = VOCABULARY.map(v => {
+      const weighted = pool.map(v => {
         const s = stats[v.id];
         if (!s) return { vocab: v, weight: 10 }; // Never seen = high priority
         const wrongRate = s.attempts > 0 ? s.wrong / s.attempts : 0;
@@ -1169,8 +1393,11 @@
       promptCard.className = "prompt-bar";
       promptLabel.textContent = "PL";
       promptWord.textContent = vocab.prompt;
-      promptContext.textContent = vocab.context;
       resultInfo.className = "result-info";
+      updateBatchIndicator();
+
+      // Show skip button only when not showing result
+      document.getElementById("btnSkipWord").style.display = "flex";
 
       bottomActions.style.display = "flex";
       nextActions.style.display = "none";
@@ -1198,7 +1425,8 @@
         // Show result
         ocrResult.textContent = recognized || "(nothing)";
         ocrResult.className = "ocr-text " + (isCorrect ? "" : "wrong-answer");
-        correctAnswer.textContent = currentVocab.answer;
+        correctAnswer.textContent = currentVocab.answerDisplay;
+
         resultInfo.className = "result-info visible";
 
         promptCard.className = "prompt-bar " + (isCorrect ? "result-correct" : "result-wrong");
@@ -1209,6 +1437,7 @@
         // Switch to rating mode
         bottomActions.style.display = "none";
         nextActions.style.display = "flex";
+        document.getElementById("btnSkipWord").style.display = "none";
         isShowingResult = true;
       } catch (err) {
         console.error("OCR error:", err);
@@ -1221,7 +1450,7 @@
 
     function showAnswer() {
       if (isShowingResult) return;
-      correctAnswer.textContent = currentVocab.answer;
+      correctAnswer.textContent = currentVocab.answerDisplay;
       ocrResult.textContent = "(peeked)";
       ocrResult.className = "ocr-text wrong-answer";
       resultInfo.className = "result-info visible";
@@ -1232,6 +1461,7 @@
 
       bottomActions.style.display = "none";
       nextActions.style.display = "flex";
+      document.getElementById("btnSkipWord").style.display = "none";
       isShowingResult = true;
     }
 
@@ -1252,6 +1482,17 @@
     });
     btnShowAnswer.addEventListener("click", showAnswer);
 
+    // Skip current word: replace it in the batch and show next
+    document.getElementById("btnSkipWord").addEventListener("click", () => {
+      if (isChecking) return;
+      if (currentVocab) {
+        skipWordInBatch(currentVocab.id);
+      }
+      lastCheckResult = null;
+      const vocab = pickNextVocab();
+      showVocab(vocab);
+    });
+
     // Rating button listeners
     nextActions.querySelectorAll(".btn-rating").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -1270,13 +1511,14 @@
 
     function renderStats() {
       const stats = loadStats();
+      const batchSize = getBatchSize();
       let totalAttempts = 0;
       let totalAgain = 0;
       let totalHard = 0;
       let totalGood = 0;
       let totalEasy = 0;
 
-      VOCABULARY.forEach(v => {
+      currentBatch.forEach(v => {
         const s = stats[v.id];
         if (s) {
           totalAttempts += s.attempts;
@@ -1288,6 +1530,16 @@
       });
 
       let html = `
+        <div class="settings-section">
+          <h3>Batch Settings</h3>
+          <div class="setting-row">
+            <label for="batchSizeInput">Words per batch</label>
+            <input type="number" id="batchSizeInput" min="1" max="${VOCABULARY.length}" value="${batchSize}">
+          </div>
+          <button class="btn-skip-batch" id="btnSkipBatch">Skip Batch (get new words)</button>
+        </div>
+
+        <h3 style="font-size:14px; font-weight:700; margin-bottom:10px;">Current Batch (${currentBatch.length} words)</h3>
         <div class="stats-summary" style="grid-template-columns: 1fr 1fr 1fr 1fr 1fr;">
           <div class="stat-box">
             <div class="number">${totalAttempts}</div>
@@ -1313,7 +1565,7 @@
         <div class="vocab-stats-list">
       `;
 
-      VOCABULARY.forEach(v => {
+      currentBatch.forEach(v => {
         const s = stats[v.id];
         const attempts = s ? s.attempts : 0;
         const again = s ? (s.again || 0) : 0;
@@ -1324,7 +1576,7 @@
           <div class="vocab-stat-item">
             <div>
               <div class="word">${v.prompt}</div>
-              <div class="translation">${v.answer}</div>
+              <div class="translation">${v.answerDisplay}</div>
             </div>
             <div class="ratio">
               <span style="color:#ef4444;">${again}</span> /
@@ -1341,6 +1593,18 @@
         <button class="btn-clear-stats" id="btnClearStats">Reset All Statistics</button>
       `;
       statsBody.innerHTML = html;
+
+      // Batch size input handler
+      document.getElementById("batchSizeInput").addEventListener("change", (e) => {
+        const newSize = setBatchSize(parseInt(e.target.value) || DEFAULT_BATCH_SIZE);
+        e.target.value = newSize;
+      });
+
+      // Skip batch button handler
+      document.getElementById("btnSkipBatch").addEventListener("click", () => {
+        skipCurrentBatch();
+        statsModal.classList.remove("open");
+      });
 
       document.getElementById("btnClearStats").addEventListener("click", () => {
         if (confirm("Are you sure you want to reset all statistics?")) {
@@ -1370,11 +1634,28 @@
     // =========================================================================
     async function init() {
       resizeCanvas();
-      await initOCR();
+      await Promise.all([initOCR(), loadVocabulary()]);
+      resolveBatch();
       nextWord();
     }
 
     init();
+
+    // =========================================================================
+    // SERVICE WORKER REGISTRATION
+    // =========================================================================
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => {
+            console.log('SW registered, scope:', reg.scope);
+          })
+          .catch(err => {
+            console.log('SW registration failed:', err);
+          });
+      });
+    }
   </script>
-</body>
-</html>
+
+
+</body></html>
