@@ -675,6 +675,78 @@
       font-size: 12px;
     }
 
+    /* ---- Data Management (export/import) ---- */
+    .data-section {
+      margin-top: 12px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .data-section h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .data-btn-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-export, .btn-import {
+      flex: 1;
+      height: 44px;
+      border: 2px solid var(--primary);
+      border-radius: 10px;
+      background: transparent;
+      color: var(--primary);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-export:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-import {
+      border-color: #8b5cf6;
+      color: #8b5cf6;
+    }
+
+    .btn-import:hover {
+      background: #8b5cf6;
+      color: #fff;
+    }
+
+    .import-status {
+      margin-top: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .import-status.success {
+      display: block;
+      background: var(--success-bg);
+      color: #16a34a;
+    }
+
+    .import-status.error {
+      display: block;
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
     /* ---- Progress Ring (prompt bar) ---- */
     .progress-ring-container {
       position: relative;
@@ -1065,6 +1137,83 @@
 
     function clearStats() {
       localStorage.removeItem(STORAGE_KEY);
+    }
+
+    // Export all learning data as a JSON file download
+    function exportStats() {
+      const data = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        stats: loadStats(),
+        batch: loadBatch(),
+        batchSize: getBatchSize()
+      };
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const dateStr = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `anki-scribe-backup-${dateStr}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Import learning data from a JSON file
+    // mode: "replace" overwrites everything, "merge" keeps the better stats per word
+    function importStats(file, mode) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = JSON.parse(e.target.result);
+            // Validate structure
+            if (!data || typeof data.stats !== "object") {
+              reject("Invalid backup file: missing stats data.");
+              return;
+            }
+
+            if (mode === "replace") {
+              // Full replace: overwrite stats, batch, and batch size
+              saveStats(data.stats);
+              if (data.batch && Array.isArray(data.batch)) {
+                saveBatch(data.batch);
+              }
+              if (data.batchSize && typeof data.batchSize === "number") {
+                setBatchSize(data.batchSize);
+              }
+            } else {
+              // Merge: for each word, keep whichever has more attempts.
+              // If the imported word has more attempts, use it entirely.
+              const current = loadStats();
+              const incoming = data.stats;
+              for (const id of Object.keys(incoming)) {
+                const inc = incoming[id];
+                const cur = current[id];
+                if (!cur || (inc.attempts || 0) > (cur.attempts || 0)) {
+                  current[id] = inc;
+                }
+              }
+              saveStats(current);
+              // Don't overwrite batch on merge
+            }
+
+            // Refresh batch and UI
+            resolveBatch();
+            updateBatchIndicator();
+            updateProgressRing();
+
+            const wordCount = Object.keys(data.stats).length;
+            resolve(wordCount);
+          } catch (err) {
+            reject("Failed to parse backup file: " + err.message);
+          }
+        };
+        reader.onerror = () => reject("Failed to read file.");
+        reader.readAsText(file);
+      });
     }
 
     // =========================================================================
@@ -1957,6 +2106,21 @@
       });
 
       html += `</div>
+        <div class="data-section">
+          <h3>Data Management</h3>
+          <div class="data-btn-row">
+            <button class="btn-export" id="btnExportStats">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export Backup
+            </button>
+            <button class="btn-import" id="btnImportStats">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Import Backup
+            </button>
+          </div>
+          <input type="file" id="importFileInput" accept=".json" style="display:none;">
+          <div class="import-status" id="importStatus"></div>
+        </div>
         <button class="btn-clear-stats" id="btnClearStats">Reset All Statistics</button>
       `;
       statsBody.innerHTML = html;
@@ -1986,6 +2150,48 @@
           clearStats();
           renderStats();
         }
+      });
+
+      // Export stats handler
+      document.getElementById("btnExportStats").addEventListener("click", () => {
+        exportStats();
+      });
+
+      // Import stats handler
+      const importFileInput = document.getElementById("importFileInput");
+      const importStatus = document.getElementById("importStatus");
+
+      document.getElementById("btnImportStats").addEventListener("click", () => {
+        importFileInput.click();
+      });
+
+      importFileInput.addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Ask whether to merge or replace
+        const doReplace = confirm(
+          "Import mode:\n\n" +
+          "OK = Replace all stats with backup\n" +
+          "Cancel = Merge (keep best stats per word)"
+        );
+        const mode = doReplace ? "replace" : "merge";
+
+        try {
+          const wordCount = await importStats(file, mode);
+          importStatus.className = "import-status success";
+          importStatus.textContent = `Imported ${wordCount} word stats (${mode} mode). Refreshing...`;
+          // Refresh the stats modal after a short delay
+          setTimeout(() => {
+            renderStats();
+          }, 1500);
+        } catch (err) {
+          importStatus.className = "import-status error";
+          importStatus.textContent = typeof err === "string" ? err : "Import failed.";
+        }
+
+        // Reset file input so same file can be re-imported
+        importFileInput.value = "";
       });
     }
 
