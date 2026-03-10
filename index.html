@@ -12,6 +12,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Anki Scribe">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="icons/icon-48.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="icons/icon-96.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1050,6 +1053,124 @@
     .progress-segmented-bar .seg.mastered { background: #22c55e; }
     .progress-segmented-bar .seg.learning { background: #f59e0b; }
     .progress-segmented-bar .seg.unseen { background: var(--border); }
+
+    /* ---- Landscape layout for mobile ---- */
+    @media (orientation: landscape) and (max-height: 500px) {
+      body {
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+
+      .main {
+        flex-direction: column;
+        padding: 3px;
+        gap: 3px;
+      }
+
+      /* Prompt bar: ultra-compact single row */
+      .prompt-bar {
+        padding: 3px 10px;
+        min-height: unset;
+        gap: 6px;
+        border-radius: 8px;
+      }
+
+      .prompt-word {
+        font-size: 16px;
+      }
+
+      .batch-indicator {
+        font-size: 9px;
+      }
+
+      .prompt-stats-btn,
+      .btn-skip-word {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+      }
+
+      .progress-ring-container {
+        width: 28px;
+        height: 28px;
+      }
+
+      .progress-ring-container svg {
+        width: 28px;
+        height: 28px;
+      }
+
+      .progress-ring-text {
+        font-size: 7px;
+      }
+
+      /* Result info: compact */
+      .result-info {
+        font-size: 11px;
+        padding: 2px 10px;
+        border-radius: 8px;
+      }
+
+      /* Drawing area takes all remaining height */
+      .drawing-area {
+        min-height: 0;
+        gap: 3px;
+      }
+
+      .canvas-wrapper {
+        border-radius: 8px;
+      }
+
+      .btn-check {
+        width: 40px;
+        font-size: 11px;
+        border-radius: 8px;
+      }
+
+      /* Bottom actions: thinner buttons */
+      .bottom-actions {
+        gap: 3px;
+      }
+
+      .bottom-actions .btn {
+        height: 32px;
+        font-size: 12px;
+        border-radius: 8px;
+      }
+
+      .bottom-actions .btn svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .btn-rating {
+        height: 32px !important;
+        padding: 2px !important;
+      }
+
+      .rating-label {
+        font-size: 11px;
+      }
+
+      .rating-time {
+        font-size: 8px;
+      }
+
+      /* Modal adjustments for landscape */
+      .modal {
+        max-height: 95vh;
+        border-radius: 12px;
+      }
+
+      .modal-overlay {
+        align-items: center;
+      }
+
+      .file-picker-dropdown {
+        top: 4px;
+        max-height: 90vh;
+      }
+    }
 
     /* ---- Loading overlay ---- */
     .loading-overlay {
@@ -2458,7 +2579,7 @@
           <div class="import-status" id="importStatus"></div>
         </div>
         <button class="btn-clear-stats" id="btnClearStats">Reset All Statistics</button>
-        <small>v2026-03-10-22:54</small>
+        <small>v2026-03-10-32:50</small>
       `;
       statsBody.innerHTML = html;
 

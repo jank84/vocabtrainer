@@ -1,13 +1,17 @@
 // Anki Scribe - Service Worker
 // Provides offline support via caching
 
-const CACHE_NAME = 'anki-scribe-v2';
+const CACHE_NAME = 'anki-scribe-v3';
 
 // App shell files to pre-cache on install
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
+  './icons/icon-48.png',
+  './icons/icon-72.png',
+  './icons/icon-96.png',
+  './icons/icon-144.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-192.png',
