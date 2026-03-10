@@ -1,14 +1,14 @@
 {
   "name": "Anki Scribe - Vocabulary Trainer",
   "short_name": "Anki Scribe",
-  "description": "Handwriting-based German to Polish vocabulary trainer with OCR",
+  "description": "Handwriting-based Polish vocabulary trainer with OCR",
   "id": "/",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#f5f6fa",
-  "theme_color": "#6c7ff8",
+  "theme_color": "#f4452a",
   "categories": ["education"],
   "prefer_related_applications": false,
   "icons": [
