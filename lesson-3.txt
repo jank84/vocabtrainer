@@ -1,0 +1,51 @@
+#separator:semicolon
+#html:true
+but;ale
+white;biały
+brown;brązowy
+what;co
+every...;co...
+what do you have there?;co tam masz
+black;czarny
+red;czerwony
+Is this a blackboard?;Czy to jest tablica?
+pen;długopis
+big;duży
+nice photograph;fajna fotografia
+purple, violet;fioletowy
+photograph from vacation / holidays;fotografia z wakacji
+rubber eraser;gumka
+bag;torba
+dictionary;słownik
+friend;koleżanka
+mobile phone, cellphone;komórka
+chair;krzesło
+Who is it?;Kto to jest?
+mug;kubek
+small;mały
+male, masculine;męski
+nice;miły
+blue;niebieski
+unfortunately;niestety
+nondescript, featureless;nijaki
+normally;normalnie
+a new student;nowy student
+pencil;ołówek
+palm;palma
+passport;paszport
+compact disc;płyta
+in Spanish;po hiszpańsku
+orange;pomarańczowy
+truth;prawda
+pink;różowy
+noun;rzeczownik
+hard cheese / cottage cheese;ser żółty/biały
+old;stary
+table;stół
+grey;szary
+three kinds;trzy rodzaje
+too small;za mały
+notebook;zeszyt
+green;zielony
+female;żeński
+yellow;żółty

@@ -1344,7 +1344,11 @@
     let VOCABULARY = [];
 
     // ---- Multi-file support: globals & helpers ----
-    const DEFAULT_VOCAB_FILE = 'pol_ lesson 1 + 2.txt';
+    const DEFAULT_VOCAB_FILES = [
+      'lesson-1.txt',
+      'lesson-2.txt',
+      'lesson-3.txt'
+    ];
     const FILES_REGISTRY_KEY = 'anki_scribe_files';      // JSON array of {slug, name}
     const ACTIVE_FILE_KEY = 'anki_scribe_active_file';    // slug of last-used file
     let activeFileSlug = '';                               // current active file slug
@@ -1442,16 +1446,38 @@
     }
 
     // ---- Parse vocabulary text into array (pure function, no side effects) ----
+    // Supports tab-delimited and semicolon-delimited formats.
+    // Delimiter is auto-detected from a #separator: header line, defaulting to tab.
     function parseVocabularyText(text) {
       const lines = text.split('\n');
       const vocab = [];
       let idCounter = 1;
 
+      // Auto-detect delimiter from header comment (e.g. "#separator:semicolon")
+      let delimiter = '\t';
+      for (const line of lines) {
+        const trimmed = line.trim().toLowerCase();
+        if (trimmed.startsWith('#separator:')) {
+          const sep = trimmed.split(':')[1].trim();
+          if (sep === 'semicolon') delimiter = ';';
+          break;
+        }
+        if (!trimmed.startsWith('#')) break; // stop looking after headers
+      }
+
       for (const line of lines) {
         const trimmed = line.trim();
         if (!trimmed || trimmed.startsWith('#')) continue;
 
-        const parts = trimmed.split('\t');
+        // For semicolons, split on the first occurrence only (values may contain semicolons)
+        let parts;
+        if (delimiter === ';') {
+          const idx = trimmed.indexOf(';');
+          if (idx === -1) continue;
+          parts = [trimmed.substring(0, idx), trimmed.substring(idx + 1)];
+        } else {
+          parts = trimmed.split('\t');
+        }
         if (parts.length < 2) continue;
 
         const prompt = decodeHTML(parts[0].trim());
@@ -1468,14 +1494,21 @@
       return vocab;
     }
 
-    // Fetch the default vocab file from the server, store it in IndexedDB, and return parsed vocab
+    // Fetch all default vocab files from the server, store them in IndexedDB,
+    // and return the first one's parsed result as the initially active file.
     async function fetchAndStoreDefaultVocab() {
-      const response = await fetch(DEFAULT_VOCAB_FILE);
-      const text = await response.text();
-      const slug = slugify(DEFAULT_VOCAB_FILE);
-      const displayName = DEFAULT_VOCAB_FILE.replace(/\.[^.]+$/, '');
-      await storeVocabFile(slug, displayName, text);
-      return { slug, displayName, vocab: parseVocabularyText(text) };
+      let firstResult = null;
+      for (const file of DEFAULT_VOCAB_FILES) {
+        const response = await fetch(file);
+        const text = await response.text();
+        const slug = slugify(file);
+        const displayName = file.replace(/\.[^.]+$/, '');
+        await storeVocabFile(slug, displayName, text);
+        if (!firstResult) {
+          firstResult = { slug, displayName, vocab: parseVocabularyText(text) };
+        }
+      }
+      return firstResult;
     }
 
     // Load vocabulary for a given slug from IndexedDB, parse, and set as active
@@ -2579,7 +2612,7 @@
           <div class="import-status" id="importStatus"></div>
         </div>
         <button class="btn-clear-stats" id="btnClearStats">Reset All Statistics</button>
-        <small>v2026-03-10-32:50</small>
+        <small>v2026-03-13-20:03</small>
       `;
       statsBody.innerHTML = html;
 
@@ -2781,7 +2814,7 @@
         // Validate: try parsing to ensure it has vocab entries
         const vocab = parseVocabularyText(text);
         if (vocab.length === 0) {
-          alert('No vocabulary entries found in this file.\nExpected format: English[TAB]Translation (one per line).');
+          alert('No vocabulary entries found in this file.\nExpected format: Prompt[TAB]Answer or Prompt;Answer (one per line).\nUse #separator:semicolon header for semicolon-delimited files.');
           vocabFileInput.value = '';
           return;
         }

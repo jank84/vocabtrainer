@@ -1,0 +1,70 @@
+#separator:semicolon
+#html:true
+What is it?;Co to jest?
+What does it mean?;Co to znaczy?
+something special;coś specjalnego
+sugar;cukier
+four;cztery
+See you tomorrow!;do jutra
+Goodbye!;Do widzenia!
+See you!;Do zobaczenia!
+goodnight;dobranoc
+Good evening!;dobry wieczór
+two;dwa
+ten;dziesięć
+nine;dziewięć
+Thank you!;dziękuję
+movie, film;film
+Where is... ?;Gdzie jest... ?
+gratis;gratis
+tea;herbata
+first name;imię
+one;jeden
+coffee;kawa
+computer;komputer
+lesson, class;lekcja
+I have a question.;mam pytanie
+Nice to meet you.;Miło mi cię poznać!
+me too;mnie również
+on the left;na lewo
+on the right;na prawo
+See you later!;Na razie!
+nationality;narodowość
+teacher;nauczycielka
+surname;nazwisko
+no;nie
+I don't remember.;nie pamiętam
+I don't understand.;nie rozumiem
+I don't know.;nie wiem
+eight;osiem
+to open;otworzyć
+Bye!;pa
+to bake;piec
+stove;piec
+five;pięć
+write, please;proszę napisać
+Repeat, please.;proszę powtórzyć
+read, please;proszę przeczytać
+spell it, please;proszę przeliterować
+please introduce yourself;proszę się przedstawić
+excuse me, I am sorry;przepraszam
+I understand;rozumiem
+too;również
+secretary;sekretarka
+seven;siedem
+kompliziert;skomplikowane
+walk;spacer
+meeting, appointment;spotkanie
+student;student
+student;studentka
+six;sześć
+yes;tak
+there;tam
+three;trzy
+here;tu
+here;tutaj
+phonetic workshop;warsztaty fonetyczne
+water;woda
+free, slow;wolny
+trip;wycieczka
+to close, to shut;zamknąć

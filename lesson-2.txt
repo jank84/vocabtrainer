@@ -1,0 +1,91 @@
+#separator:semicolon
+#html:true
+And where do you live?;A ty gdzie mieszkasz?
+And how are you?;A u ciebie?
+address;adres
+path, avenue;aleja
+because;bo
+...because my girlfriend is from Poland;...bo moja dziewczyna jest z Polski
+because my boyfriend is from Poland;bo mój chłopak jest z Polski
+to be;być
+What's new?;Co nowego?
+What's up?;Co słychać?
+What's new with you?;Co u ciebie?
+How are you?;Co u pani słychać?
+fourteen;czternaście
+to read;czytać
+why;dlaczego
+Why do you learn Polish?;Dlaczego uczy się pani polskiego?
+Why do you learn Polish?;Dlaczego uczysz się polskiego?
+house number...;dom numer...
+twenty;dwadzieścia
+twelve;dwanaście
+train station;dworzec
+nineteen;dziewiętnaście
+play, game;gra
+to play;grać
+play the guitar;grać na gitarze
+to play tennis;grać w tenisa
+I live in the centre too;ja też mieszkam w centrum
+eleven;jedenaście
+I'm here;jestem tutaj
+I'm from Germany;jestem z Niemiec
+I'm from Poland;jestem z Polski
+I'm from Italy;jestem z Włoch
+Are you from England?;Jesteś z Anglii?
+you are from Spain;jesteście z Hiszpanii
+we are from France;jesteśmy z Francji
+to love;kochać
+Polish language course;kurs języka polskiego
+Mami comes back home;Mami wraca do domu
+Do you have a phone?;Masz telefon?
+to live;mieszkać
+flat number...;mieszkanie numer...
+Have a nice lesson!;Miłej lekcji!
+my daughter;moja córka
+my friend;moja koleżanka
+my mum;moja mama
+my teacher;moja nauczycielka
+my husband;mój mąż
+my number is;mój numer to
+my son;mój syn
+my phone;mój telefon
+for example;na przykład
+really;naprawdę
+nationality;narodowość
+nothing new;nic nowego
+of course, certainly;oczywiście
+to watch, to look at;oglądać
+eighteen;osiemnaście
+country, state;państwo
+the Kowalskis;państwo Kowalscy
+fifteen;piętnaście
+square;plac
+as usual / as of all;po staremu
+to work;pracować
+Keep the change.;Reszta dla pana/pani.
+binder;segregator
+seventeen;siedemnaście
+where from?;skąd
+to study;studiować
+sixteen;szesnaście
+to sing;śpiewać
+so-so;tak sobie
+now;teraz
+thirteen;trzynaście
+here are my personal details;tu są moje dane osobowe
+street;ulica
+at home;w domu
+in a hotel;w hotelu
+in London;w Londynie
+at work;w pracy
+at school;w szkole
+everything ok;wszystko dobrze
+everything's great;wszystko świetnie
+everything is fine;wszystko w porządku
+with Polish family;z polską rodziną
+to know;znać
+wrong;źle
+to speak Polish at home;żeby mówić w domu po polsku
+to work;żeby pracować
+to study;żeby studiować
