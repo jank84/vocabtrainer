@@ -1074,6 +1074,527 @@
     .progress-segmented-bar .seg.learning { background: #f59e0b; }
     .progress-segmented-bar .seg.unseen { background: var(--border); }
 
+    /* ---- Achievement Overlay ---- */
+    .achievement-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.1s;
+    }
+
+    .achievement-overlay.active {
+      pointer-events: all;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .achievement-backdrop {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(20,12,0,0.75) 0%, rgba(0,0,0,0.92) 100%);
+      opacity: 0;
+      animation: none;
+    }
+    .achievement-overlay.active .achievement-backdrop {
+      animation: achBackdropIn 600ms ease-out forwards;
+    }
+    @keyframes achBackdropIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .achievement-rays {
+      position: absolute;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background:
+        conic-gradient(
+          from 0deg,
+          transparent 0deg, rgba(255,215,0,0.10) 8deg, transparent 16deg,
+          transparent 20deg, rgba(255,215,0,0.07) 28deg, transparent 36deg,
+          transparent 40deg, rgba(255,215,0,0.12) 48deg, transparent 56deg,
+          transparent 60deg, rgba(255,215,0,0.06) 68deg, transparent 76deg,
+          transparent 80deg, rgba(255,215,0,0.10) 88deg, transparent 96deg,
+          transparent 100deg, rgba(255,215,0,0.08) 108deg, transparent 116deg,
+          transparent 120deg, rgba(255,215,0,0.11) 128deg, transparent 136deg,
+          transparent 140deg, rgba(255,215,0,0.06) 148deg, transparent 156deg,
+          transparent 160deg, rgba(255,215,0,0.10) 168deg, transparent 176deg,
+          transparent 180deg, rgba(255,215,0,0.09) 188deg, transparent 196deg,
+          transparent 200deg, rgba(255,215,0,0.07) 208deg, transparent 216deg,
+          transparent 220deg, rgba(255,215,0,0.12) 228deg, transparent 236deg,
+          transparent 240deg, rgba(255,215,0,0.06) 248deg, transparent 256deg,
+          transparent 260deg, rgba(255,215,0,0.10) 268deg, transparent 276deg,
+          transparent 280deg, rgba(255,215,0,0.08) 288deg, transparent 296deg,
+          transparent 300deg, rgba(255,215,0,0.11) 308deg, transparent 316deg,
+          transparent 320deg, rgba(255,215,0,0.07) 328deg, transparent 336deg,
+          transparent 340deg, rgba(255,215,0,0.10) 348deg, transparent 360deg
+        );
+      opacity: 0;
+      transform: scale(0.3) rotate(-30deg);
+    }
+    .achievement-overlay.active .achievement-rays {
+      animation: achRaysIn 1200ms 300ms ease-out forwards, achRaysSpin 20s 1500ms linear infinite;
+    }
+    @keyframes achRaysIn {
+      from { opacity: 0; transform: scale(0.3) rotate(-30deg); }
+      to   { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+    @keyframes achRaysSpin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .achievement-particles {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .ach-particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffd700 0%, #daa520 40%, transparent 70%);
+      box-shadow: 0 0 6px 2px rgba(255,215,0,0.5);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .achievement-modal {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      transform: scale(0) translateY(40px);
+      opacity: 0;
+      filter: brightness(3) blur(4px);
+    }
+    .achievement-overlay.active .achievement-modal {
+      animation: achModalIn 800ms 200ms cubic-bezier(0.16, 1.2, 0.3, 1) forwards;
+    }
+    @keyframes achModalIn {
+      0%   { transform: scale(0) translateY(40px); opacity: 0; filter: brightness(3) blur(4px); }
+      50%  { filter: brightness(1.6) blur(1px); }
+      100% { transform: scale(1) translateY(0); opacity: 1; filter: brightness(1) blur(0); }
+    }
+
+    .achievement-glow {
+      position: absolute;
+      width: 460px;
+      height: 260px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -55%);
+      background: radial-gradient(ellipse, rgba(255,215,0,0.35) 0%, rgba(218,165,32,0.12) 40%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      animation: achGlowPulse 2.5s ease-in-out infinite;
+    }
+    @keyframes achGlowPulse {
+      0%, 100% { opacity: 0.7; transform: translate(-50%, -55%) scale(1); }
+      50%      { opacity: 1;   transform: translate(-50%, -55%) scale(1.08); }
+    }
+
+    .achievement-plaquette {
+      position: relative;
+      width: min(92vw, 440px);
+      background:
+        linear-gradient(170deg, rgba(255,248,220,0.12) 0%, transparent 40%),
+        linear-gradient(180deg, #3d2e1a 0%, #2a1f10 100%);
+      border: 3px solid #8b6914;
+      box-shadow:
+        0 0 0 1px #1a1208,
+        0 0 0 4px #6b4f0e,
+        0 0 0 5px #1a1208,
+        inset 0 1px 0 rgba(255,215,0,0.3),
+        inset 0 -1px 0 rgba(0,0,0,0.4),
+        0 8px 32px rgba(0,0,0,0.6),
+        0 0 60px rgba(255,215,0,0.15);
+      overflow: hidden;
+    }
+
+    .plaquette-shine {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        105deg,
+        transparent 0%, transparent 35%,
+        rgba(255,248,220,0.03) 38%, rgba(255,248,220,0.08) 41%,
+        rgba(255,248,220,0.22) 44%, rgba(255,248,220,0.35) 46%,
+        rgba(255,255,255,0.45) 48%, rgba(255,248,220,0.35) 50%,
+        rgba(255,248,220,0.22) 52%, rgba(255,248,220,0.08) 55%,
+        rgba(255,248,220,0.03) 58%, transparent 61%, transparent 100%
+      );
+      transform: translateX(-120%);
+      pointer-events: none;
+      z-index: 5;
+    }
+    .achievement-overlay.active .plaquette-shine {
+      animation: achShineSweep 3s 600ms ease-in-out forwards, achShineSweepLoop 4s 4.5s ease-in-out infinite;
+    }
+    .plaquette-shine--delayed {
+      background: linear-gradient(
+        100deg,
+        transparent 0%, transparent 40%,
+        rgba(255,215,0,0.04) 43%, rgba(255,215,0,0.12) 46%,
+        rgba(255,248,220,0.18) 48%, rgba(255,215,0,0.12) 50%,
+        rgba(255,215,0,0.04) 53%, transparent 56%, transparent 100%
+      );
+    }
+    .achievement-overlay.active .plaquette-shine--delayed {
+      animation: achShineSweep 2.5s 1400ms ease-in-out forwards, achShineSweepLoop 5s 5.5s ease-in-out infinite;
+    }
+    @keyframes achShineSweep {
+      from { transform: translateX(-120%); }
+      to   { transform: translateX(120%); }
+    }
+    @keyframes achShineSweepLoop {
+      0%   { transform: translateX(-150%); }
+      100% { transform: translateX(150%); }
+    }
+
+    .plaquette-border-glow {
+      position: absolute;
+      inset: -2px;
+      border: 2px solid transparent;
+      background:
+        linear-gradient(180deg, rgba(255,215,0,0.0), rgba(255,215,0,0.0)) padding-box,
+        conic-gradient(from var(--ach-glow-angle, 0deg), #ffd700, #daa520, #b8860b, #8b6914, #b8860b, #daa520, #ffd700) border-box;
+      pointer-events: none;
+      opacity: 0.6;
+      z-index: 4;
+      animation: achBorderGlow 3s linear infinite;
+    }
+    @property --ach-glow-angle {
+      syntax: "<angle>";
+      initial-value: 0deg;
+      inherits: false;
+    }
+    @keyframes achBorderGlow {
+      from { --ach-glow-angle: 0deg; }
+      to   { --ach-glow-angle: 360deg; }
+    }
+
+    .plaquette-inner {
+      position: relative;
+      margin: 6px;
+      border: 1px solid rgba(139,105,20,0.5);
+      padding: 28px 24px 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(255,215,0,0.04) 0%, transparent 30%);
+    }
+
+    .plaquette-filigree {
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      height: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .plaquette-filigree--top { top: 10px; }
+    .plaquette-filigree--bottom { bottom: 8px; }
+    .plaquette-filigree::before {
+      content: "";
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #8b6914, #daa520, #8b6914, transparent);
+    }
+    .plaquette-filigree::after {
+      content: "";
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border: 1px solid #b8860b;
+      transform: rotate(45deg);
+      background: #2a1f10;
+      box-shadow: 0 0 4px rgba(255,215,0,0.3);
+    }
+
+    .achievement-shield {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+    .shield-icon {
+      position: relative;
+      animation: achShieldFloat 3s ease-in-out infinite;
+    }
+    @keyframes achShieldFloat {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-4px); }
+    }
+    .shield-glow {
+      position: absolute;
+      inset: -12px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,215,0,0.4), transparent 60%);
+      animation: achShieldGlow 2s ease-in-out infinite;
+    }
+    @keyframes achShieldGlow {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50%      { opacity: 1;   transform: scale(1.15); }
+    }
+    .shield-emoji {
+      display: none;
+      font-size: 48px;
+      line-height: 1;
+      filter: drop-shadow(0 0 12px rgba(255,215,0,0.6));
+    }
+    .shield-icon.show-emoji .shield-svg { display: none; }
+    .shield-icon.show-emoji .shield-emoji { display: block; }
+
+    .achievement-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #daa520;
+      text-shadow: 0 0 10px rgba(255,215,0,0.4);
+      margin-bottom: 4px;
+      opacity: 0;
+    }
+    .achievement-overlay.active .achievement-label {
+      animation: achTextIn 500ms 700ms ease-out forwards;
+    }
+
+    .achievement-title {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #fff8dc;
+      text-shadow:
+        0 0 8px rgba(255,215,0,0.5),
+        0 0 20px rgba(255,215,0,0.3),
+        0 2px 4px rgba(0,0,0,0.5);
+      line-height: 1;
+      margin-bottom: 6px;
+      opacity: 0;
+    }
+    .achievement-overlay.active .achievement-title {
+      animation: achTitleIn 600ms 850ms ease-out forwards, achTitleGlow 2.5s 1500ms ease-in-out infinite;
+    }
+    @keyframes achTitleIn {
+      0%   { opacity: 0; transform: scale(0.7); filter: blur(4px); }
+      50%  { filter: blur(0); }
+      100% { opacity: 1; transform: scale(1); filter: blur(0); }
+    }
+    @keyframes achTitleGlow {
+      0%, 100% { text-shadow: 0 0 8px rgba(255,215,0,0.5), 0 0 20px rgba(255,215,0,0.3), 0 2px 4px rgba(0,0,0,0.5); }
+      50%      { text-shadow: 0 0 12px rgba(255,215,0,0.7), 0 0 30px rgba(255,215,0,0.5), 0 0 50px rgba(255,215,0,0.2), 0 2px 4px rgba(0,0,0,0.5); }
+    }
+
+    .achievement-desc {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: #b8a67a;
+      letter-spacing: 0.5px;
+      max-width: 280px;
+      line-height: 1.4;
+      opacity: 0;
+    }
+    .achievement-overlay.active .achievement-desc {
+      animation: achTextIn 500ms 1000ms ease-out forwards;
+    }
+    @keyframes achTextIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .achievement-divider {
+      width: 60%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #8b6914, #daa520, #8b6914, transparent);
+      margin: 12px 0 8px;
+      opacity: 0;
+    }
+    .achievement-overlay.active .achievement-divider {
+      animation: achTextIn 400ms 1100ms ease-out forwards;
+    }
+
+    .achievement-dismiss {
+      position: relative;
+      appearance: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #2a1f10;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.3), transparent 40%),
+        linear-gradient(180deg, #ffd700, #b8860b);
+      border: 3px solid #8b6914;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.4),
+        inset 0 -2px 0 rgba(0,0,0,0.2),
+        0 4px 12px rgba(0,0,0,0.4),
+        0 0 20px rgba(255,215,0,0.15);
+      padding: 10px 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      overflow: hidden;
+      opacity: 0;
+      transition: filter 120ms, transform 100ms;
+    }
+    .achievement-overlay.active .achievement-dismiss {
+      animation: achTextIn 400ms 1500ms ease-out forwards;
+    }
+    .achievement-dismiss:hover {
+      filter: brightness(1.1);
+    }
+    .achievement-dismiss:active {
+      transform: translateY(2px);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.3),
+        0 1px 4px rgba(0,0,0,0.3);
+    }
+    .achievement-dismiss::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        105deg,
+        transparent 40%,
+        rgba(255,255,255,0.3) 48%,
+        rgba(255,255,255,0.4) 50%,
+        rgba(255,255,255,0.3) 52%,
+        transparent 60%
+      );
+      transform: translateX(-120%);
+      animation: achBtnShine 3s 2s ease-in-out infinite;
+    }
+    @keyframes achBtnShine {
+      0%   { transform: translateX(-120%); }
+      30%  { transform: translateX(120%); }
+      100% { transform: translateX(120%); }
+    }
+
+    .achievement-overlay.dismissing .achievement-modal {
+      animation: achModalOut 400ms ease-in forwards;
+    }
+    .achievement-overlay.dismissing .achievement-backdrop {
+      animation: achBackdropOut 500ms 100ms ease-in forwards;
+    }
+    .achievement-overlay.dismissing .achievement-rays {
+      animation: achRaysOut 400ms ease-in forwards;
+    }
+    @keyframes achModalOut {
+      to { transform: scale(0.8) translateY(-20px); opacity: 0; filter: brightness(2) blur(4px); }
+    }
+    @keyframes achBackdropOut {
+      to { opacity: 0; }
+    }
+    @keyframes achRaysOut {
+      to { opacity: 0; transform: scale(1.3) rotate(15deg); }
+    }
+
+    .achievement-overlay.flash::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(255,248,220,0.9), rgba(255,215,0,0.4) 50%, transparent 80%);
+      animation: achFlash 700ms ease-out forwards;
+      pointer-events: none;
+      z-index: 10;
+    }
+    @keyframes achFlash {
+      0%   { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* ---- Achievements section in stats modal ---- */
+    .achievements-section {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .achievements-section h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .achievements-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+    }
+
+    .achievement-card {
+      position: relative;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 6px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .achievement-card.unlocked {
+      border-color: #daa520;
+      background: linear-gradient(180deg, rgba(255,215,0,0.06) 0%, var(--bg) 100%);
+      box-shadow: 0 0 12px rgba(255,215,0,0.08);
+    }
+
+    .achievement-card.locked {
+      opacity: 0.45;
+      filter: grayscale(0.8);
+    }
+
+    .achievement-card .ach-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+
+    .achievement-card .ach-name {
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--text);
+    }
+
+    .achievement-card .ach-desc {
+      font-size: 10px;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    .achievement-card .ach-date {
+      font-size: 9px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
     /* ---- Landscape layout for mobile ---- */
     @media (orientation: landscape) and (max-height: 500px) {
       body {
@@ -1444,6 +1965,49 @@
         Import .txt file
       </div>
       <input type="file" id="vocabFileInput" accept=".txt" style="display:none;">
+    </div>
+  </div>
+
+  <!-- Achievement Overlay -->
+  <div class="achievement-overlay" id="achievementOverlay">
+    <div class="achievement-backdrop"></div>
+    <div class="achievement-rays"></div>
+    <div class="achievement-particles" id="achievementParticles"></div>
+    <div class="achievement-modal" id="achievementModal">
+      <div class="achievement-glow"></div>
+      <div class="achievement-plaquette">
+        <div class="plaquette-shine"></div>
+        <div class="plaquette-shine plaquette-shine--delayed"></div>
+        <div class="plaquette-border-glow"></div>
+        <div class="plaquette-inner">
+          <div class="plaquette-filigree plaquette-filigree--top"></div>
+          <div class="plaquette-filigree plaquette-filigree--bottom"></div>
+          <div class="achievement-shield">
+            <div class="shield-icon" id="achievementIcon">
+              <div class="shield-glow"></div>
+              <svg class="shield-svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+                <path d="M32 4L8 16v16c0 14 10.7 27.1 24 30 13.3-2.9 24-16 24-30V16L32 4z" fill="url(#achShieldGrad)" stroke="#c9981a" stroke-width="2.5"/>
+                <path d="M32 10l-18 9v12c0 11 8.2 21.2 18 23.4" fill="url(#achShieldHL)" opacity="0.3"/>
+                <polygon points="28,25 24,35 30,33 28,42 38,29 32,31 36,24" fill="#fff8dc" stroke="#b8860b" stroke-width="0.8"/>
+                <defs>
+                  <linearGradient id="achShieldGrad" x1="8" y1="4" x2="56" y2="62" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#ffd700"/><stop offset="35%" stop-color="#daa520"/><stop offset="65%" stop-color="#b8860b"/><stop offset="100%" stop-color="#8b6914"/>
+                  </linearGradient>
+                  <linearGradient id="achShieldHL" x1="14" y1="10" x2="32" y2="55" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#fff8dc"/><stop offset="100%" stop-color="#ffd700" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span class="shield-emoji" id="achievementEmoji"></span>
+            </div>
+          </div>
+          <div class="achievement-label" id="achLabel">Achievement Unlocked!</div>
+          <div class="achievement-title" id="achTitle">Batch Master</div>
+          <div class="achievement-desc" id="achDesc">You mastered all words in this batch.</div>
+          <div class="achievement-divider"></div>
+        </div>
+      </div>
+      <button class="achievement-dismiss" id="achievementDismiss" type="button">Continue</button>
     </div>
   </div>
 
@@ -1875,6 +2439,199 @@
     }
 
     // =========================================================================
+    // ACHIEVEMENTS SYSTEM
+    // Stores unlocked achievements in localStorage. Each achievement has a
+    // unique id, display info, and unlock timestamp. Designed to be extensible.
+    // =========================================================================
+    const ACHIEVEMENTS_KEY = 'anki_scribe_achievements';
+
+    // Achievement definitions. Add new achievements here.
+    const ACHIEVEMENT_DEFS = {
+      batch_complete_1: {
+        id: 'batch_complete_1',
+        icon: '\u{1F3C6}', // trophy
+        name: 'First Batch!',
+        desc: 'Complete your first batch by mastering all words.',
+        check: (ctx) => ctx.batchCompletions >= 1
+      },
+      batch_complete_5: {
+        id: 'batch_complete_5',
+        icon: '\u{1F525}', // fire
+        name: 'On Fire!',
+        desc: 'Complete 5 batches.',
+        check: (ctx) => ctx.batchCompletions >= 5
+      },
+      batch_complete_10: {
+        id: 'batch_complete_10',
+        icon: '\u{2B50}', // star
+        name: 'Batch Veteran',
+        desc: 'Complete 10 batches.',
+        check: (ctx) => ctx.batchCompletions >= 10
+      },
+      batch_complete_25: {
+        id: 'batch_complete_25',
+        icon: '\u{1F451}', // crown
+        name: 'Batch Royalty',
+        desc: 'Complete 25 batches.',
+        check: (ctx) => ctx.batchCompletions >= 25
+      }
+    };
+
+    function loadAchievements() {
+      try {
+        const raw = localStorage.getItem(ACHIEVEMENTS_KEY);
+        if (!raw) return { unlocked: {}, batchCompletions: 0 };
+        const data = JSON.parse(raw);
+        if (!data || typeof data !== 'object') return { unlocked: {}, batchCompletions: 0 };
+        if (!data.unlocked || typeof data.unlocked !== 'object') data.unlocked = {};
+        if (typeof data.batchCompletions !== 'number') data.batchCompletions = 0;
+        return data;
+      } catch {
+        return { unlocked: {}, batchCompletions: 0 };
+      }
+    }
+
+    function saveAchievements(data) {
+      localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(data));
+    }
+
+    // Record a batch completion and check for new achievements.
+    // Returns array of newly unlocked achievement ids.
+    function recordBatchCompletion() {
+      const data = loadAchievements();
+      data.batchCompletions = (data.batchCompletions || 0) + 1;
+      const newlyUnlocked = [];
+      for (const [id, def] of Object.entries(ACHIEVEMENT_DEFS)) {
+        if (!data.unlocked[id] && def.check(data)) {
+          data.unlocked[id] = { unlockedAt: Date.now() };
+          newlyUnlocked.push(id);
+        }
+      }
+      saveAchievements(data);
+      return newlyUnlocked;
+    }
+
+    // ---- Achievement overlay UI ----
+    const achOverlay = document.getElementById('achievementOverlay');
+    const achParticles = document.getElementById('achievementParticles');
+    const achDismiss = document.getElementById('achievementDismiss');
+    const achLabel = document.getElementById('achLabel');
+    const achTitle = document.getElementById('achTitle');
+    const achDesc = document.getElementById('achDesc');
+    const achIcon = document.getElementById('achievementIcon');
+    const achEmoji = document.getElementById('achievementEmoji');
+
+    let achDismissCallback = null;
+
+    function createAchParticles(count) {
+      achParticles.innerHTML = '';
+      const colors = [
+        { bg: 'radial-gradient(circle, #ffd700 0%, #daa520 40%, transparent 70%)', shadow: '0 0 6px 2px rgba(255,215,0,0.5)' },
+        { bg: 'radial-gradient(circle, #fffbe6 0%, #ffd700 50%, transparent 80%)', shadow: '0 0 8px 3px rgba(255,248,200,0.6)' }
+      ];
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        const colorSet = colors[Math.random() > 0.5 ? 1 : 0];
+        p.className = 'ach-particle';
+        const angle = Math.random() * Math.PI * 2;
+        const radius = 80 + Math.random() * 260;
+        const cx = 50 + Math.cos(angle) * (radius / 8);
+        const cy = 50 + Math.sin(angle) * (radius / 6);
+        p.style.left = cx + '%';
+        p.style.top = cy + '%';
+        p.style.background = colorSet.bg;
+        p.style.boxShadow = colorSet.shadow;
+        const size = 3 + Math.random() * 6;
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+        const dur = 1.5 + Math.random() * 3;
+        const delay = Math.random() * 2;
+        const driftX = -40 + Math.random() * 80;
+        const driftY = -60 - Math.random() * 100;
+        const animName = 'achP' + i;
+        const style = document.createElement('style');
+        style.textContent = `
+          @keyframes ${animName} {
+            0%   { opacity: 0; transform: translate(0, 0) scale(0); }
+            15%  { opacity: 1; transform: translate(${driftX * 0.15}px, ${driftY * 0.15}px) scale(1); }
+            70%  { opacity: 0.8; }
+            100% { opacity: 0; transform: translate(${driftX}px, ${driftY}px) scale(0.2); }
+          }
+        `;
+        document.head.appendChild(style);
+        p.style.animation = `${animName} ${dur}s ${delay}s ease-out infinite`;
+        p._style = style;
+        achParticles.appendChild(p);
+      }
+    }
+
+    function clearAchParticles() {
+      achParticles.querySelectorAll('.ach-particle').forEach(p => {
+        if (p._style) p._style.remove();
+      });
+      achParticles.innerHTML = '';
+    }
+
+    function showAchievementPopup(achievementId, onDismiss) {
+      const def = ACHIEVEMENT_DEFS[achievementId];
+      if (achievementId === '_batch_done') {
+        // Generic batch completion celebration (no new achievement unlock)
+        achLabel.textContent = 'Batch Complete!';
+        achTitle.textContent = 'Well Done!';
+        achDesc.textContent = 'You mastered all words in this batch. A new batch is ready.';
+        achIcon.classList.remove('show-emoji');
+      } else if (!def) {
+        return;
+      } else {
+        achLabel.textContent = 'Achievement Unlocked!';
+        achTitle.textContent = def.name;
+        achDesc.textContent = def.desc;
+        achEmoji.textContent = def.icon;
+        achIcon.classList.add('show-emoji');
+      }
+      achDismissCallback = onDismiss || null;
+      createAchParticles(45);
+      achOverlay.classList.add('active', 'flash');
+      setTimeout(() => achOverlay.classList.remove('flash'), 700);
+    }
+
+    function dismissAchievement() {
+      achOverlay.classList.add('dismissing');
+      setTimeout(() => {
+        achOverlay.classList.remove('active', 'dismissing');
+        clearAchParticles();
+        if (achDismissCallback) {
+          const cb = achDismissCallback;
+          achDismissCallback = null;
+          cb();
+        }
+      }, 600);
+    }
+
+    achDismiss.addEventListener('click', dismissAchievement);
+    achOverlay.addEventListener('click', (e) => {
+      if (e.target === achOverlay || e.target.classList.contains('achievement-backdrop')) {
+        dismissAchievement();
+      }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && achOverlay.classList.contains('active')) {
+        dismissAchievement();
+      }
+    });
+
+    // Show a queue of achievements one after another
+    function showAchievementQueue(ids) {
+      if (!ids || ids.length === 0) return;
+      const [first, ...rest] = ids;
+      showAchievementPopup(first, () => {
+        if (rest.length > 0) {
+          setTimeout(() => showAchievementQueue(rest), 300);
+        }
+      });
+    }
+
+    // =========================================================================
     // BATCH SYSTEM
     // Limits active vocabulary to a small subset (batch) for focused learning.
     // The batch is persisted in localStorage and only changes when the user
@@ -2014,6 +2771,19 @@
       return Math.round(total / currentBatch.length);
     }
 
+    // Check if every word in the current batch is mastered (last rating good or easy)
+    function isBatchFullyMastered() {
+      if (currentBatch.length === 0) return false;
+      const stats = loadStats();
+      for (const v of currentBatch) {
+        const s = stats[v.id];
+        if (!s || !s.history || s.history.length === 0) return false;
+        const lastRating = s.history[s.history.length - 1].rating;
+        if (lastRating !== 'good' && lastRating !== 'easy') return false;
+      }
+      return true;
+    }
+
     // Categorize ALL vocabulary into mastered / learning / unseen
     function calculateOverallProgress() {
       const stats = loadStats();
@@ -2116,6 +2886,41 @@
           <div class="seg mastered" style="width:${masteredPct}%"></div>
           <div class="seg learning" style="width:${learningPct}%"></div>
           <div class="seg unseen" style="width:${unseenPct}%"></div>
+        </div>
+      `;
+    }
+
+    // Render the achievements section for the stats modal
+    function renderAchievementsSection() {
+      const data = loadAchievements();
+      const defs = Object.values(ACHIEVEMENT_DEFS);
+
+      let cards = '';
+      for (const def of defs) {
+        const unlock = data.unlocked[def.id];
+        const isUnlocked = !!unlock;
+        const dateStr = isUnlocked
+          ? new Date(unlock.unlockedAt).toLocaleDateString()
+          : '';
+        cards += `
+          <div class="achievement-card ${isUnlocked ? 'unlocked' : 'locked'}">
+            <div class="ach-icon">${def.icon}</div>
+            <div class="ach-name">${def.name}</div>
+            <div class="ach-desc">${def.desc}</div>
+            ${isUnlocked ? `<div class="ach-date">${dateStr}</div>` : ''}
+          </div>
+        `;
+      }
+
+      const unlockedCount = Object.keys(data.unlocked).length;
+      const totalCount = defs.length;
+
+      return `
+        <div class="achievements-section">
+          <h3>Achievements (${unlockedCount}/${totalCount})</h3>
+          <div class="achievements-grid">
+            ${cards}
+          </div>
         </div>
       `;
     }
@@ -2618,6 +3423,29 @@
         recordAttempt(lastCheckResult.vocabId, rating);
         lastCheckResult = null;
       }
+
+      // Check if all words in the current batch are now mastered
+      if (isBatchFullyMastered()) {
+        const newlyUnlocked = recordBatchCompletion();
+        // Auto-advance to a new batch
+        generateNewBatch();
+        resolveBatch();
+        updateBatchIndicator();
+        updateProgressRing();
+        const vocab = pickNextVocab();
+        showVocab(vocab);
+        // Show achievement animation (after UI updates)
+        if (newlyUnlocked.length > 0) {
+          setTimeout(() => showAchievementQueue(newlyUnlocked), 400);
+        } else {
+          // Still show a brief celebration even without a new achievement
+          setTimeout(() => {
+            showAchievementPopup('_batch_done');
+          }, 400);
+        }
+        return;
+      }
+
       const vocab = pickNextVocab();
       showVocab(vocab);
     }
@@ -2681,6 +3509,8 @@
           <h3>Overall Progress</h3>
           ${renderProgressOverview()}
         </div>
+
+        ${renderAchievementsSection()}
 
         <div class="settings-section">
           <h3>Batch Settings</h3>
