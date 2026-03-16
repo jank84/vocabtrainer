@@ -32,7 +32,7 @@ Write Polish vocabulary by hand on a canvas. Tesseract.js reads your handwriting
 
 ## Getting Started
 
-Open **[theheathlee.github.io/vocabtrainer](https://theheathlee.github.io/vocabtrainer/)** in any modern browser — no install or account needed.
+Open **[jank84.github.io/vocabtrainer](https://jank84.github.io/vocabtrainer/)** in any modern browser — no install or account needed.
 
 > The first load downloads Tesseract language data from CDN (~50–100 MB). Subsequent loads are fully offline.
 
@@ -41,7 +41,7 @@ Open **[theheathlee.github.io/vocabtrainer](https://theheathlee.github.io/vocabt
 Clone the repo and serve it over HTTP (required for service workers):
 
 ```bash
-git clone https://github.com/theHeathLee/vocabtrainer.git
+git clone https://github.com/jank84/vocabtrainer.git
 cd vocabtrainer
 python -m http.server 8000
 ```
