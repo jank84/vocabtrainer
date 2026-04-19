@@ -2213,18 +2213,33 @@
       return vocab;
     }
 
-    // Fetch all default vocab files from the server, store them in IndexedDB,
-    // and return the first one's parsed result as the initially active file.
-    async function fetchAndStoreDefaultVocab() {
+    // Ensure all bundled default vocab files exist in IndexedDB/registry.
+    // Existing files are left untouched so returning users keep their data.
+    async function ensureDefaultVocabFiles() {
       let firstResult = null;
       for (const file of DEFAULT_VOCAB_FILES) {
-        const response = await fetch(file);
-        const text = await response.text();
         const slug = slugify(file);
         const displayName = file.replace(/\.[^.]+$/, '');
-        await storeVocabFile(slug, displayName, text);
+        let record = await loadVocabFile(slug);
+
+        if (!record) {
+          const response = await fetch(file);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch default vocabulary file: ${file}`);
+          }
+          const text = await response.text();
+          await storeVocabFile(slug, displayName, text);
+          record = { slug, name: displayName, text };
+        } else {
+          registerFile(slug, record.name || displayName);
+        }
+
         if (!firstResult) {
-          firstResult = { slug, displayName, vocab: parseVocabularyText(text) };
+          firstResult = {
+            slug: record.slug,
+            displayName: record.name || displayName,
+            vocab: parseVocabularyText(record.text)
+          };
         }
       }
       return firstResult;
@@ -2287,8 +2302,8 @@
       // 3. Clear active file slug so init picks up the new defaults
       localStorage.removeItem(ACTIVE_FILE_KEY);
 
-      // 4. Fetch and store the new lesson files
-      const result = await fetchAndStoreDefaultVocab();
+      // 4. Rebuild the bundled lesson files
+      const result = await ensureDefaultVocabFiles();
       return result;
     }
 
@@ -3817,7 +3832,7 @@
         </div>
         <button class="btn-clear-stats" id="btnClearStats">Reset All Statistics</button>
         <button class="btn-update-lessons" id="btnUpdateLessons">Update Lesson Files</button>
-        <small>v2026-04-18-12:53</small>
+        <small>v2026-04-19-18:19</small>
       `;
       statsBody.innerHTML = html;
 
@@ -4098,6 +4113,14 @@
         }
       }
 
+      // Keep bundled lesson files in sync for returning users too.
+      let defaultResult = null;
+      try {
+        defaultResult = await ensureDefaultVocabFiles();
+      } catch (err) {
+        console.error('Failed to sync default vocabulary files:', err);
+      }
+
       // Determine which vocab file to load
       const savedSlug = getActiveFileSlug();
       let vocabLoaded = false;
@@ -4113,9 +4136,9 @@
       }
 
       if (!vocabLoaded) {
-        // First run or missing file: fetch default, store in IndexedDB
+        // First run or missing file: fall back to the first bundled lesson
         try {
-          const result = await fetchAndStoreDefaultVocab();
+          const result = defaultResult || await ensureDefaultVocabFiles();
           VOCABULARY = result.vocab;
           activeFileSlug = result.slug;
           // Migrate any legacy stats from before multi-file support
