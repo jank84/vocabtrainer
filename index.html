@@ -1776,84 +1776,6 @@
       transition: width 0.3s;
     }
 
-    /* ---- Migration dialog ---- */
-    .migrate-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px);
-      z-index: 300;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s;
-    }
-
-    .migrate-overlay.open {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .migrate-dialog {
-      background: var(--surface);
-      border-radius: 16px;
-      width: 90%;
-      max-width: 380px;
-      padding: 24px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-      transform: scale(0.9);
-      transition: transform 0.25s ease;
-    }
-
-    .migrate-overlay.open .migrate-dialog {
-      transform: scale(1);
-    }
-
-    .migrate-dialog h2 {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 12px;
-    }
-
-    .migrate-dialog p {
-      font-size: 14px;
-      color: var(--text-muted);
-      line-height: 1.5;
-      margin-bottom: 20px;
-    }
-
-    .migrate-buttons {
-      display: flex;
-      gap: 10px;
-    }
-
-    .migrate-buttons button {
-      flex: 1;
-      padding: 12px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: opacity 0.15s;
-    }
-
-    .migrate-buttons button:active {
-      opacity: 0.8;
-    }
-
-    .migrate-btn-no {
-      background: var(--bg);
-      color: var(--text);
-      border: 1px solid var(--border) !important;
-    }
-
-    .migrate-btn-yes {
-      background: var(--primary);
-      color: #fff;
-    }
   </style>
 </head>
 <body>
@@ -1864,19 +1786,6 @@
     <p id="loadingStatus">Ready!</p>
     <div class="loading-bar">
       <div class="loading-bar-inner" id="loadingBar" style="width: 100%;"></div>
-    </div>
-  </div>
-
-  <!-- Migration dialog for old-version users -->
-  <div class="migrate-overlay" id="migrateOverlay">
-    <div class="migrate-dialog">
-      <h2>New lesson files available</h2>
-      <p>The vocabulary files have been updated to 3 separate lessons. Updating will replace the old file, load the new lessons, and reset all statistics.</p>
-      <p>Do you want to update now?</p>
-      <div class="migrate-buttons">
-        <button class="migrate-btn-no" id="migrateNo">Keep old</button>
-        <button class="migrate-btn-yes" id="migrateYes">Update</button>
-      </div>
     </div>
   </div>
 
@@ -2253,60 +2162,6 @@
       return { slug: record.slug, displayName: record.name, vocab };
     }
 
-    // ---- Migration from old vocab file to new lesson files ----
-    const OLD_VOCAB_SLUG = 'pol_lesson_1_2';
-    const MIGRATION_DISMISSED_KEY = 'anki_scribe_migration_dismissed';
-
-    function isOldUserNeedingMigration() {
-      // Already dismissed the dialog
-      //if (localStorage.getItem(MIGRATION_DISMISSED_KEY)) return false;
-      // Check if old file slug exists in registry
-      const files = getFileRegistry();
-      return files.some(f => f.slug === OLD_VOCAB_SLUG);
-    }
-
-    function showMigrationDialog() {
-      return new Promise((resolve) => {
-        const overlay = document.getElementById('migrateOverlay');
-        const btnYes = document.getElementById('migrateYes');
-        const btnNo = document.getElementById('migrateNo');
-        // Small delay so the CSS transition plays
-        requestAnimationFrame(() => overlay.classList.add('open'));
-
-        btnYes.onclick = () => {
-          overlay.classList.remove('open');
-          resolve(true);
-        };
-        btnNo.onclick = () => {
-          overlay.classList.remove('open');
-          resolve(false);
-        };
-      });
-    }
-
-    async function performMigration() {
-      // 1. Delete all existing files from IndexedDB, registry, and their stats
-      const existingFiles = getFileRegistry();
-      for (const f of existingFiles) {
-        await deleteVocabFile(f.slug);
-        localStorage.removeItem('anki_scribe_stats_' + f.slug);
-        localStorage.removeItem('anki_scribe_batch_' + f.slug);
-        localStorage.removeItem('anki_scribe_batch_size_' + f.slug);
-      }
-
-      // 2. Clear any legacy (pre-multi-file) keys too
-      localStorage.removeItem('anki_scribe_stats');
-      localStorage.removeItem('anki_scribe_batch');
-      localStorage.removeItem('anki_scribe_batch_size');
-
-      // 3. Clear active file slug so init picks up the new defaults
-      localStorage.removeItem(ACTIVE_FILE_KEY);
-
-      // 4. Rebuild the bundled lesson files
-      const result = await ensureDefaultVocabFiles();
-      return result;
-    }
-
     // Switch to a different vocabulary file: set active, reload vocab, resolve batch
     async function switchVocabFile(slug) {
       const result = await loadVocabularyForSlug(slug);
@@ -2350,24 +2205,6 @@
     function getStorageKey() { return 'anki_scribe_stats_' + activeFileSlug; }
     function getBatchKey()   { return 'anki_scribe_batch_' + activeFileSlug; }
     function getBatchSizeKey() { return 'anki_scribe_batch_size_' + activeFileSlug; }
-
-    // Migrate legacy (pre-multi-file) stats to a per-file key on first run
-    function migrateLegacyStats(slug) {
-      const legacyStats = localStorage.getItem('anki_scribe_stats');
-      const legacyBatch = localStorage.getItem('anki_scribe_batch');
-      const legacyBatchSize = localStorage.getItem('anki_scribe_batch_size');
-      const newStatsKey = 'anki_scribe_stats_' + slug;
-      // Only migrate if new key doesn't exist yet and legacy data is present
-      if (!localStorage.getItem(newStatsKey) && legacyStats) {
-        localStorage.setItem(newStatsKey, legacyStats);
-        if (legacyBatch) localStorage.setItem('anki_scribe_batch_' + slug, legacyBatch);
-        if (legacyBatchSize) localStorage.setItem('anki_scribe_batch_size_' + slug, legacyBatchSize);
-        // Remove legacy keys after successful migration
-        localStorage.removeItem('anki_scribe_stats');
-        localStorage.removeItem('anki_scribe_batch');
-        localStorage.removeItem('anki_scribe_batch_size');
-      }
-    }
 
     // Rating intervals in milliseconds
     const RATING_INTERVALS = {
@@ -3831,7 +3668,6 @@
           <div class="import-status" id="importStatus"></div>
         </div>
         <button class="btn-clear-stats" id="btnClearStats">Reset All Statistics</button>
-        <button class="btn-update-lessons" id="btnUpdateLessons">Update Lesson Files</button>
         <small>v2026-04-19-18:19</small>
       `;
       statsBody.innerHTML = html;
@@ -3860,29 +3696,6 @@
         if (confirm("Are you sure you want to reset all statistics?")) {
           clearStats();
           renderStats();
-        }
-      });
-
-      // Update lesson files handler
-      document.getElementById("btnUpdateLessons").addEventListener("click", async () => {
-        const accepted = await showMigrationDialog();
-        if (accepted) {
-          try {
-            const result = await performMigration();
-            VOCABULARY = result.vocab;
-            activeFileSlug = result.slug;
-            setActiveFileSlug(activeFileSlug);
-            resolveBatch();
-            updateBatchIndicator();
-            updateProgressRing();
-            updateFilePickerLabel();
-            const vocab = pickNextVocab();
-            if (vocab) showVocab(vocab);
-            statsModal.classList.remove("open");
-          } catch (err) {
-            console.error('Update failed:', err);
-            alert('Failed to update lesson files: ' + err.message);
-          }
         }
       });
 
@@ -4088,31 +3901,6 @@
     async function init() {
       resizeCanvas();
 
-      // Check if this is a returning user with the old vocab file
-      if (isOldUserNeedingMigration()) {
-        const wantsUpdate = await showMigrationDialog();
-        if (wantsUpdate) {
-          try {
-            const result = await performMigration();
-            VOCABULARY = result.vocab;
-            activeFileSlug = result.slug;
-            setActiveFileSlug(activeFileSlug);
-            await initOCR();
-            resolveBatch();
-            updateFilePickerLabel();
-            const vocab = pickNextVocab();
-            if (vocab) showVocab(vocab);
-            return;
-          } catch (err) {
-            console.error('Migration failed:', err);
-            // Fall through to normal init
-          }
-        } else {
-          // User declined; don't ask again
-          localStorage.setItem(MIGRATION_DISMISSED_KEY, '1');
-        }
-      }
-
       // Keep bundled lesson files in sync for returning users too.
       let defaultResult = null;
       try {
@@ -4141,8 +3929,6 @@
           const result = defaultResult || await ensureDefaultVocabFiles();
           VOCABULARY = result.vocab;
           activeFileSlug = result.slug;
-          // Migrate any legacy stats from before multi-file support
-          migrateLegacyStats(result.slug);
         } catch (err) {
           console.error('Failed to load default vocabulary:', err);
           VOCABULARY = [];
