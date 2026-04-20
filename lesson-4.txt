@@ -1,3 +1,5 @@
+#separator:semicolon
+#html:true
 atrakcyjna;attractive
 brudny (adjective);dirty
 brzydki (adjective);ugly
