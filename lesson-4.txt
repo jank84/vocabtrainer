@@ -1,66 +1,66 @@
 #separator:semicolon
 #html:true
-atrakcyjna;attractive
-brudny (adjective);dirty
-brzydki (adjective);ugly
-chory (adjective);ill, sick
-chyba;unless, I guess
-ciekawe;interessant
-Cieszę się. (expression);I'm glad.
-cieszyć się (verb);to be happy/enjoy
-czy;do, does, if, whether, or
-czysty (adjective);clean
-Dlaczego jesteś dziś smutna? (expression);Why are you sad today?
-dzwonić (verb);to ring; to phone
-energiczny (adjective);energetic
-gruby (adjective);fat
-inteligentny (adjective);intelligent
-jest tylko jeden problem (expression);there is only one problem
-Jestem pewna / pewny;I am sure
-kończyć (verb);to end, to finish
-kreatywny (adjective);creative
-lektorka języka hiszpańskiego (expression);Spanish language teacher
-leniwy (adjective);lazy
-lubić (verb);to like
-ładna;pretty
-ma dziewczynę (expression);has a girlfriend 
-masz rację (expression);you are right
-mieć rację (expression);to be right
-mila (noun, Feminine);mile
-miła;pretty
-młody (adjective);young
-mnie też (expression);me too
-mówić (verb);to speak
-mówię po polsku (expression);I speak Polish 
-myśleć (verb);to think
-na korytarzu (expression);in the corridor
-na pewno (adverb);surely, certainly
-niski (adjective);short
-no dobrze (expression);all right then
-ona uczy niemieckiego (expression);she teaches German
-palić (verb);to smoke, to burn
-planuje studiować (expression);plans to study 
-pracowity (adjective);hard-working;diligent; assiduous
-przerwa (noun, Feminine);break
-przystojny (adjective);handsome
-smutny (adjective);sad
-spontaniczny (adjective);spontaneous
-sympatyczny (adjective);likeable, nice
-szczupły (adjective);slim;
-średniego wzrostu (expression);medium height 
-tańczyć (verb);to dance
-to świetnie (expression);it's great
-to żart (expression);It's a joke
-trochę (Numeral);a little
-twoja koleżanka (expression);your friend
-tylko myślę (expression);I'm only thinking
-uczyć się (verb);to learn; to study utalentowany (adjective);talented
-w grupie (expression);in a group
-wesoły (adjective);jolly, cheerful
-wysoki (adjective);tall, high
-wysportowany (adjective);fit
-zdrowy (adjective);healthy
-ze;from, with
-zmęczony (adjective);tired
-z/ze;with
-że;that
+attractive;atrakcyjna
+dirty;brudny (adjective)
+ugly;brzydki (adjective)
+ill, sick;chory (adjective)
+unless, I guess;chyba
+interessant;ciekawe
+I'm glad.;Cieszę się. (expression)
+to be happy/enjoy;cieszyć się (verb)
+do, does, if, whether, or;czy
+clean;czysty (adjective)
+Why are you sad today?;Dlaczego jesteś dziś smutna? (expression)
+ to phone;dzwonić (verb);to ring
+energetic;energiczny (adjective)
+fat;gruby (adjective)
+intelligent;inteligentny (adjective)
+there is only one problem;jest tylko jeden problem (expression)
+I am sure;Jestem pewna / pewny
+to end, to finish;kończyć (verb)
+creative;kreatywny (adjective)
+Spanish language teacher;lektorka języka hiszpańskiego (expression)
+lazy;leniwy (adjective)
+to like;lubić (verb)
+pretty;ładna
+has a girlfriend ;ma dziewczynę (expression)
+you are right;masz rację (expression)
+to be right;mieć rację (expression)
+mile;mila (noun, Feminine)
+pretty;miła
+young;młody (adjective)
+me too;mnie też (expression)
+to speak;mówić (verb)
+I speak Polish ;mówię po polsku (expression)
+to think;myśleć (verb)
+in the corridor;na korytarzu (expression)
+surely, certainly;na pewno (adverb)
+short;niski (adjective)
+all right then;no dobrze (expression)
+she teaches German;ona uczy niemieckiego (expression)
+to smoke, to burn;palić (verb)
+plans to study ;planuje studiować (expression)
+ assiduous;pracowity (adjective);hard-working;diligent
+break;przerwa (noun, Feminine)
+handsome;przystojny (adjective)
+sad;smutny (adjective)
+spontaneous;spontaniczny (adjective)
+likeable, nice;sympatyczny (adjective)
+;szczupły (adjective);slim
+medium height ;średniego wzrostu (expression)
+to dance;tańczyć (verb)
+it's great;to świetnie (expression)
+It's a joke;to żart (expression)
+a little;trochę (Numeral)
+your friend;twoja koleżanka (expression)
+I'm only thinking;tylko myślę (expression)
+talented;uczyć się (verb);to learn; to study utalentowany (adjective)
+in a group;w grupie (expression)
+jolly, cheerful;wesoły (adjective)
+tall, high;wysoki (adjective)
+fit;wysportowany (adjective)
+healthy;zdrowy (adjective)
+from, with;ze
+tired;zmęczony (adjective)
+with;z/ze
+that;że
