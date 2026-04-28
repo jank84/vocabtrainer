@@ -1,0 +1,66 @@
+#separator:semicolon
+#html:true
+attractive;atrakcyjna
+dirty (adjective);brudny 
+ugly (adjective);brzydki 
+ill, sick (adjective);chory 
+probably, I guess;chyba
+interesting;ciekawe
+I'm glad. (expression);Cieszę się. 
+to be happy/enjoy (verb);cieszyć się 
+do, does, if, whether, or;czy
+clean (adjective);czysty 
+Why are you sad today? (expression);Dlaczego jesteś dziś smutna? 
+to phone, to ring (verb);dzwonić
+energetic (adjective);energiczny 
+fat (adjective);gruby 
+intelligent (adjective);inteligentny 
+there is only one problem (expression);jest tylko jeden problem 
+I am sure;Jestem pewna / pewny
+to end, to finish (verb);kończyć 
+creative (adjective);kreatywny 
+Spanish language teacher (expression);lektorka języka hiszpańskiego 
+lazy (adjective);leniwy 
+to like (verb);lubić 
+pretty (adjective);ładna
+has a girlfriend (expression);ma dziewczynę 
+you are right (expression);masz rację
+to be right (expression);mieć rację
+mile (noun, Feminine);mila
+nice, kind (adjective);miła
+young (adjective);młody 
+me too (expression);mnie też
+to speak (verb);mówić
+I speak Polish (expression);mówię po polsku
+to think (verb);myśleć
+in the corridor (expression);na korytarzu
+surely, certainly (adverb);na pewno
+short (adjective);niski 
+all right then (expression);no dobrze
+she teaches German (expression);ona uczy niemieckiego
+to smoke, to burn (verb);palić
+plans to study (expression);planuje studiować
+hard-working, diligent (adjective);pracowity
+break (noun, Feminine);przerwa
+handsome (adjective);przystojny 
+sad (adjective);smutny 
+spontaneous (adjective);spontaniczny 
+likeable, nice (adjective);sympatyczny
+slim (adjective);szczupły
+medium height (expression);średniego wzrostu
+to dance (verb);tańczyć
+it's great (expression);to świetnie
+It's a joke (expression);to żart
+a little (adverb);trochę
+your friend (expression);twoja koleżanka
+I'm only thinking (expression);tylko myślę
+talented (adjective);utalentowany
+to learn, to study (verb);uczyć się
+in a group (expression);w grupie
+jolly, cheerful (adjective);wesoły 
+tall, high (adjective);wysoki 
+fit (adjective);wysportowany 
+healthy (adjective);zdrowy 
+from, with (preposition);z / ze
+tired (adjective);zmęczony 
+that;że

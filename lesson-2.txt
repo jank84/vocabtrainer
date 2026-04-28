@@ -22,7 +22,7 @@ twenty;dwadzieścia
 twelve;dwanaście
 train station;dworzec
 nineteen;dziewiętnaście
-play, game;gra
+game;gra
 to play;grać
 play the guitar;grać na gitarze
 to play tennis;grać w tenisa
