@@ -11,12 +11,12 @@ to be;być
 What's new?;Co nowego?
 What's up?;Co słychać?
 What's new with you?;Co u ciebie?
-How are you?;Co u pani słychać?
+How are you? (formal, to a lady);Co u pani słychać?
 fourteen;czternaście
 to read;czytać
 why;dlaczego
-Why do you learn Polish?;Dlaczego uczy się pani polskiego?
-Why do you learn Polish?;Dlaczego uczysz się polskiego?
+Why do you learn Polish? (formal);Dlaczego uczy się pani polskiego?
+Why do you learn Polish? (informal);Dlaczego uczysz się polskiego?
 house number...;dom numer...
 twenty;dwadzieścia
 twelve;dwanaście
@@ -61,7 +61,7 @@ country, state;państwo
 the Kowalskis;państwo Kowalscy
 fifteen;piętnaście
 square;plac
-as usual / as of all;po staremu
+as usual, the same as always;po staremu
 to work;pracować
 Keep the change.;Reszta dla pana/pani.
 binder;segregator
@@ -85,7 +85,7 @@ everything's great;wszystko świetnie
 everything is fine;wszystko w porządku
 with Polish family;z polską rodziną
 to know;znać
-wrong;źle
-to speak Polish at home;żeby mówić w domu po polsku
-to work;żeby pracować
-to study;żeby studiować
+badly, wrong;źle
+in order to speak Polish at home;żeby mówić w domu po polsku
+in order to work;żeby pracować
+in order to study;żeby studiować

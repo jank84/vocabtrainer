@@ -4,7 +4,7 @@ but;ale
 white;biały
 brown;brązowy
 what;co
-every...;co...
+every... (e.g. __ dzień = every day);co...
 what do you have there?;co tam masz
 black;czarny
 red;czerwony
@@ -23,11 +23,11 @@ chair;krzesło
 Who is it?;Kto to jest?
 mug;kubek
 small;mały
-male, masculine;męski
+masculine (grammatical gender);męski
 nice;miły
 blue;niebieski
 unfortunately;niestety
-nondescript, featureless;nijaki
+neuter (grammatical gender);nijaki
 normally;normalnie
 a new student;nowy student
 pencil;ołówek
@@ -39,7 +39,8 @@ orange;pomarańczowy
 truth;prawda
 pink;różowy
 noun;rzeczownik
-hard cheese / cottage cheese;ser żółty/biały
+yellow cheese (hard);ser żółty
+white cheese (cottage);ser biały
 old;stary
 table;stół
 grey;szary
@@ -47,5 +48,5 @@ three kinds;trzy rodzaje
 too small;za mały
 notebook;zeszyt
 green;zielony
-female;żeński
+feminine (grammatical gender);żeński
 yellow;żółty

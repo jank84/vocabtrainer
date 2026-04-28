@@ -16,7 +16,7 @@ nine;dziewięć
 Thank you!;dziękuję
 movie, film;film
 Where is... ?;Gdzie jest... ?
-gratis;gratis
+free, complimentary;gratis
 tea;herbata
 first name;imię
 one;jeden
@@ -30,7 +30,7 @@ on the left;na lewo
 on the right;na prawo
 See you later!;Na razie!
 nationality;narodowość
-teacher;nauczycielka
+teacher (female);nauczycielka
 surname;nazwisko
 no;nie
 I don't remember.;nie pamiętam
@@ -40,7 +40,7 @@ eight;osiem
 to open;otworzyć
 Bye!;pa
 to bake;piec
-stove;piec
+stove, oven (noun);piec
 five;pięć
 write, please;proszę napisać
 Repeat, please.;proszę powtórzyć
@@ -52,11 +52,11 @@ I understand;rozumiem
 too;również
 secretary;sekretarka
 seven;siedem
-kompliziert;skomplikowane
+complicated;skomplikowane
 walk;spacer
 meeting, appointment;spotkanie
-student;student
-student;studentka
+student (male);student
+student (female);studentka
 six;sześć
 yes;tak
 there;tam
