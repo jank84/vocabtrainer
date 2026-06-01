@@ -1,85 +1,86 @@
-17 i pół (expression);17 and a half
-akordeon (noun, Masculine);accordion
-aktor (noun, Masculine);actor
-artystka (noun, Feminine);artist
-biznesmen (noun, Masculine);businessman
-bo interesuję się... (expression);because I'm interested in...
-bo planuje studiować malarstwo (expression);because he/she plans to study painting
-Co czytasz? (expression);What do you read?/ What are you reading?
-Co lubi robić? (expression);What does he/she like to do?
-Co masz?;What do you have?
-Co pani lubi robić? (expression);What do you like doing?
-Co to jest? (expression);What is it? 
-czterdzieści (Numeral);forty
-Czym się interesujesz? (expression);What are you interested in?
-Czytam książkę biograficzną.;I read a biographical book
-dentysta (noun, Masculine);dentist
-dentystka (noun, Feminine);dentist (woman) 
-dwadzieścia (Numeral);twenty
-dziecko (noun, Neuter);child, kid
-dziennikarz (noun, Masculine);journalist 
-dziewięćdziesiąt (Numeral);ninety
-emeryt (noun, Masculine);pensioner
-fotograf (noun, Masculine);photographer
-Ile ma lat? (expression);How old is he/she/it? 
-Ile masz lat? (expression);How old are you?
-Ile pan ma lat? (expression);How old are you? 
-informatyk (noun, Masculine);IT specialist 
-intensywnie uczy się języka polskiego (expression);learns Polish intensively 
-interesować się (verb);to be interested in 
-inżynier (noun, Masculine);engineer
-Jaki on jest? (expression);What is he like?
-jest aktorką (expression);she is an actress
-jest dobrą studentką (expression);she's a good student
-jest piękna (expression);she is beautiful
-jest przerwa (expression);there is a break 
-jestem też instruktorem tanga (expression);I'm
-a tango instructor too
-jesteś muzykiem (expression);you're a musician 
-kelner (noun, Masculine);waiter
-kierowca (noun, Masculine);driver
-Kim jesteś z zawodu? (expression);What's your profession?
-kim ona jest (expression);who is she?
-Kim pani jest z zawodu? (expression);What's your profession?
-konkretnie (adverb);particularly
-który;which
-kucharz (noun, Masculine);cook
-lekarka (noun, Feminine);doctor (woman) 
-lekarz (noun, Masculine);doctor
-lubi malować (expression);likes to paint
-lubi pracować (expression);likes to work
-ma 44 lata (expression);he/she is 44 
-mam 20 lat (expression);I'm 20 years old
-muzyk (noun, Masculine);musician
-nauczyciel (noun, Masculine);teacher (man)
-nie martw się (expression);don't worry
-nie znam (expression);I don't know
-niestety (adverb);unfortunately
-osiemdziesiąt (Numeral);eighty
-pięćdziesiąt (Numeral);fifty
-piękna (adjective);beautiful
-policjant (noun, Masculine);policeman
-pracuje w teatrze (expression);she works in a theatre
-prawie (adverb);almost
-przy stoliku (expression);by the table 
-rodzina (noun, Feminine);family
-rok (noun, Masculine);year
-rolnik (noun, Masculine);farmer 
-siedemdziesiąt (Numeral);seventy
-siedzą razem (expression);they sit together 
-sto (Numeral);hundred
-syn (noun, Masculine);son
-sześćdziesiąt (Numeral);sixty
-tancerz (noun, Masculine);dancer
-to biznesmen (expression);it's a businessman 
-To dla mnie czarna magia. (expression);This is black magic to me.
-to skomplikowane (expression);It's complicated 
-trzydzieści (Numeral);thirty
-tu jest moja rodzina (expression);this is my family
-twoje dziecko (expression);your child
-umiesz tańczyć tango (expression);can you dance tango?
-urzędnik (noun, Masculine);clerk, office worker 
-z zawodu jestem muzykiem (expression);I'm a musician
-zawód (noun, Masculine);occupation/profession
-zna trochę polski (expression);knows a little Polish
-żona (noun, Feminine);wife
+#separator:semicolon
+#html:true
+17 and a half (expression);17 i pół
+accordion (noun, Masculine);akordeon
+actor (noun, Masculine);aktor
+artist (noun, Feminine);artystka
+businessman (noun, Masculine);biznesmen
+because I'm interested in... (expression);bo interesuję się...
+because he/she plans to study painting (expression);bo planuje studiować malarstwo
+What do you read?/ What are you reading? (expression);Co czytasz?
+What does he/she like to do? (expression);Co lubi robić?
+What do you have?;Co masz?
+What do you like doing? (expression);Co pani lubi robić?
+What is it? (expression);Co to jest?
+forty (Numeral);czterdzieści
+What are you interested in? (expression);Czym się interesujesz?
+I read a biographical book.;Czytam książkę biograficzną.
+dentist (noun, Masculine);dentysta
+dentist, woman (noun, Feminine);dentystka
+twenty (Numeral);dwadzieścia
+child, kid (noun, Neuter);dziecko
+journalist (noun, Masculine);dziennikarz
+ninety (Numeral);dziewięćdziesiąt
+pensioner (noun, Masculine);emeryt
+photographer (noun, Masculine);fotograf
+How old is he/she/it? (expression);Ile ma lat?
+How old are you? (expression);Ile masz lat?
+How old are you? (formal, expression);Ile pan ma lat?
+IT specialist (noun, Masculine);informatyk
+learns Polish intensively (expression);intensywnie uczy się języka polskiego
+to be interested in (verb);interesować się
+engineer (noun, Masculine);inżynier
+What is he like? (expression);Jaki on jest?
+she is an actress (expression);jest aktorką
+she's a good student (expression);jest dobrą studentką
+she is beautiful (expression);jest piękna
+there is a break (expression);jest przerwa
+I'm a tango instructor too (expression);jestem też instruktorem tanga
+you're a musician (expression);jesteś muzykiem
+waiter (noun, Masculine);kelner
+driver (noun, Masculine);kierowca
+What's your profession? (expression);Kim jesteś z zawodu?
+who is she? (expression);kim ona jest
+What's your profession? (formal, expression);Kim pani jest z zawodu?
+particularly (adverb);konkretnie
+which;który
+cook (noun, Masculine);kucharz
+doctor, woman (noun, Feminine);lekarka
+doctor (noun, Masculine);lekarz
+likes to paint (expression);lubi malować
+likes to work (expression);lubi pracować
+he/she is 44 (expression);ma 44 lata
+I'm 20 years old (expression);mam 20 lat
+musician (noun, Masculine);muzyk
+teacher, man (noun, Masculine);nauczyciel
+don't worry (expression);nie martw się
+I don't know (expression);nie znam
+unfortunately (adverb);niestety
+eighty (Numeral);osiemdziesiąt
+fifty (Numeral);pięćdziesiąt
+beautiful (adjective);piękna
+policeman (noun, Masculine);policjant
+she works in a theatre (expression);pracuje w teatrze
+almost (adverb);prawie
+by the table (expression);przy stoliku
+family (noun, Feminine);rodzina
+year (noun, Masculine);rok
+farmer (noun, Masculine);rolnik
+seventy (Numeral);siedemdziesiąt
+they sit together (expression);siedzą razem
+hundred (Numeral);sto
+son (noun, Masculine);syn
+sixty (Numeral);sześćdziesiąt
+dancer (noun, Masculine);tancerz
+it's a businessman (expression);to biznesmen
+This is black magic to me. (expression);To dla mnie czarna magia.
+It's complicated (expression);to skomplikowane
+thirty (Numeral);trzydzieści
+this is my family (expression);tu jest moja rodzina
+your child (expression);twoje dziecko
+can you dance tango? (expression);umiesz tańczyć tango
+clerk, office worker (noun, Masculine);urzędnik
+I'm a musician (expression);z zawodu jestem muzykiem
+occupation/profession (noun, Masculine);zawód
+knows a little Polish (expression);zna trochę polski
+wife (noun, Feminine);żona
