@@ -1,0 +1,80 @@
+#separator:semicolon
+#html:true
+Abendessen;kolacja
+Apfel;jabłko
+Äpfel;jabłka
+Banane;banan
+Bananen;banany
+Bier;piwo
+Birne;gruszka
+Birnen;gruszki
+Brot;chleb
+Brötchen;bułka
+Butter;masło
+Dessert / Nachtisch;deser
+Ei;jajko
+Eis;lody
+Erdbeere;truskawka
+Erdbeeren;truskawki
+Essen;jedzenie
+Fisch;ryba
+Fleisch;mięso
+Frühstück;śniadanie
+Frühstücksflocken / Cornflakes;płatki śniadaniowe
+Gabel;widelec
+Gemüse;warzywa
+Getränke;napoje
+Glas;szklanka
+Gurke;ogórek
+Gurken;ogórki
+Guten Appetit!;smacznego!
+Honig;miód
+Hähnchen;kurczak
+Kaffee;kawa
+Karotte;marchewka
+Karotten;marchewki
+Kartoffel;ziemniak
+Kartoffeln;ziemniaki
+Knoblauch;czosnek
+Kohl (Kopf);kapusta
+Kohlköpfe;kapusty
+Kopfsalat;sałata
+Kopfsalate;sałaty
+Kuchen;ciasto
+Käse / Schnittkäse;ser żółty
+Löffel;łyżka
+Marmelade;dżem
+Messer;nóż
+Milch;mleko
+Mineralwasser;woda mineralna
+Mittagessen;obiad
+Nudeln / Pasta;makaron
+Obst / Früchte;owoce
+Orange;pomarańcza
+Orangen;pomarańcze
+Paprika;papryka
+Paprikas;papryki
+Pfeffer;pieprz
+Pommes frites;frytki
+Prost! / Gesundheit!;na zdrowie!
+Quark / Weißkäse;ser biały
+Reis;ryż
+Saft;sok
+Salat (gemischt/zubereitet);sałatka
+Salz;sól
+Schinken;szynka
+Speisekarte;karta
+Suppe;zupa
+Tee;herbata
+Teller;talerz
+Tomate;pomidor
+Tomaten;pomidory
+Wein;wino
+Weintraube;winogrono
+Weintrauben;winogrona
+Wurst;kiełbasa
+Zitrone;cytryna
+Zitronen;cytryny
+Zucker;cukier
+Zwiebel;cebula
+Zwiebeln;cebule

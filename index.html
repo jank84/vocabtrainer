@@ -1961,6 +1961,24 @@
     </div>
   </div>
 
+  <!-- What's New / changelog dialog (shown once per new app version) -->
+  <div class="modal-overlay" id="changelogOverlay">
+    <div class="modal" style="border-radius:20px; max-width:400px;">
+      <div class="modal-header">
+        <h2 id="changelogTitle">What's New</h2>
+        <button class="modal-close" id="changelogClose" type="button">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body" style="padding:20px 24px 28px;">
+        <ul id="changelogList" style="margin:0 0 20px; padding-left:20px; color:var(--text-secondary); font-size:14px; line-height:1.6;"></ul>
+        <div style="display:flex; justify-content:center;">
+          <button id="changelogOk" type="button" class="btn" style="background:var(--primary); color:#fff; padding:10px 24px; border-radius:12px; font-size:14px; font-weight:600; border:none; cursor:pointer;">Got it</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // =========================================================================
     // VOCABULARY DATA - loaded from external file or IndexedDB
@@ -1979,6 +1997,7 @@
       'colors.txt',
       'lesson-5.txt',
       'lesson-6.txt',
+      'Lekcja-6_str50-51.txt'
     ];
     const FILES_REGISTRY_KEY = 'anki_scribe_files';      // JSON array of {slug, name}
     const ACTIVE_FILE_KEY = 'anki_scribe_active_file';    // slug of last-used file
@@ -2649,6 +2668,58 @@
     });
     fileCompleteOverlay.addEventListener('click', (e) => {
       if (e.target === fileCompleteOverlay) closeFileCompleteDialog();
+    });
+
+    // ---- Changelog / "What's New" dialog ----
+    // Bump APP_VERSION whenever a new entry is added; the dialog is then shown
+    // exactly once after the new version has been installed and opened.
+    const APP_VERSION = '1.1.0';
+    const CHANGELOG_KEY = 'anki_scribe_seen_version';
+    const CHANGELOG = {
+      '1.1.0': [
+        'New vocabulary added: "Lekcja-6_str50-51" — topic: Food.'
+      ]
+    };
+
+    const changelogOverlay = document.getElementById('changelogOverlay');
+    const changelogClose = document.getElementById('changelogClose');
+    const changelogOk = document.getElementById('changelogOk');
+    const changelogList = document.getElementById('changelogList');
+
+    function closeChangelog() {
+      changelogOverlay.classList.remove('open');
+      try { localStorage.setItem(CHANGELOG_KEY, APP_VERSION); } catch (e) {}
+    }
+
+    function maybeShowChangelog(isFirstRun) {
+      let seen = null;
+      try { seen = localStorage.getItem(CHANGELOG_KEY); } catch (e) {}
+      if (seen === APP_VERSION) return;
+
+      const entries = CHANGELOG[APP_VERSION] || [];
+      if (!entries.length) {
+        try { localStorage.setItem(CHANGELOG_KEY, APP_VERSION); } catch (e) {}
+        return;
+      }
+      // First ever launch: don't nag, just remember the current version.
+      if (seen === null && isFirstRun) {
+        try { localStorage.setItem(CHANGELOG_KEY, APP_VERSION); } catch (e) {}
+        return;
+      }
+
+      changelogList.innerHTML = '';
+      entries.forEach(text => {
+        const li = document.createElement('li');
+        li.textContent = text;
+        changelogList.appendChild(li);
+      });
+      changelogOverlay.classList.add('open');
+    }
+
+    changelogClose.addEventListener('click', closeChangelog);
+    changelogOk.addEventListener('click', closeChangelog);
+    changelogOverlay.addEventListener('click', (e) => {
+      if (e.target === changelogOverlay) closeChangelog();
     });
 
     // =========================================================================
@@ -3904,6 +3975,9 @@
     async function init() {
       resizeCanvas();
 
+      // Fresh install? (checked before the registry gets populated below)
+      const isFirstRun = getFileRegistry().length === 0;
+
       // Keep bundled lesson files in sync for returning users too.
       let defaultResult = null;
       try {
@@ -3947,6 +4021,9 @@
       updateFilePickerLabel();
       const vocab = pickNextVocab();
       if (vocab) showVocab(vocab);
+
+      // Show "What's New" once after a new version was installed & opened
+      maybeShowChangelog(isFirstRun);
     }
 
     init();
