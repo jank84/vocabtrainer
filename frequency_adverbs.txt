@@ -1,0 +1,15 @@
+#separator:semicolon
+#html:true
+always;zawsze
+usually;zwykle
+often;często
+sometimes;czasem
+from time to time;od czasu do czasu
+occasionally;okazjonalnie
+rarely;rzadko
+never;nigdy nie
+every day;codziennie
+every week;co tydzień
+once a day;raz dziennie
+twice a day;dwa razy dziennie
+every now and then;co jakiś czas

@@ -1,0 +1,136 @@
+#separator:semicolon
+#html:true
+a conversation via phone (noun phrase);rozmowa przez telefon
+I have a phone conversation (to do) (noun phrase);mam rozmowę przez telefon
+to wake up;budzić się
+I wake up;budzę
+you wake up;budzisz
+he/she/it wakes up;budzi
+we wake up;budzimy
+you (plural) wake up;budzicie
+they wake up;budzą
+to get up (out of bed);wstawać
+I get up;wstaję
+you get up;wstajesz
+he/she/it gets up;wstaje
+we get up;wstajemy
+you (plural) get up;wstajecie
+they get up;wstają
+to take;brać
+shower;prysznic
+I take;biorę
+you take;bierzesz
+he/she/it takes;bierze
+we take;bierzemy
+you (plural) take;bierzecie
+they take;biorą
+to brush teeth;myć zęby
+I wash/brush;myję
+you wash/brush;myjesz
+he/she/it washes/brushes;myje
+we wash/brush;myjemy
+you (plural) wash/brush;myjecie
+they wash/brush;myją
+to get dressed;ubierać się
+I get dressed;ubieram
+you get dressed;ubierasz
+he/she/it gets dressed;ubiera
+we get dressed;ubieramy
+you (plural) get dressed;ubieracie
+they get dressed;ubierają
+to drink coffee;pić kawę
+I drink;piję
+you drink;pijesz
+he/she/it drinks;pije
+we drink;pijemy
+you (plural) drink;pijecie
+they drink;piją
+to eat breakfast;jeść śniadanie
+to eat lunch;jeść obiad
+to eat dinner;jeść kolację
+I eat;jem
+you eat;jesz
+he/she/it eats;je
+we eat;jemy
+you (plural) eat;jecie
+they eat;jedzą
+to go to work;iść do pracy
+to go for a walk;iść na spacer
+to go to sleep;iść spać
+I go;idę
+you go;idziesz
+he/she/it goes;idzie
+we go;idziemy
+you (plural) go;idziecie
+they go;idą
+to work;pracować
+I work;pracuję
+you work;pracujesz
+he/she/it works;pracuje
+we work;pracujemy
+you (plural) work;pracujecie
+they work;pracują
+to go shopping;robić zakupy
+I do (shopping);robię
+you do;robisz
+he/she/it does;robi
+we do;robimy
+you (plural) do;robicie
+they do;robią
+to return home;wracać do domu
+I return;wracam
+you return;wracasz
+he/she/it returns;wraca
+we return;wracamy
+you (plural) return;wracacie
+they return;wracają
+to watch television;oglądać telewizję
+I watch;oglądam
+you watch;oglądasz
+he/she/it watches;ogląda
+we watch;oglądamy
+you (plural) watch;oglądacie
+they watch;oglądają
+to read a book;czytać książkę
+I read;czytam
+you read;czytasz
+he/she/it reads;czyta
+we read;czytamy
+you (plural) read;czytacie
+they read;czytają
+to meet with a friend;spotykać się z kolegą
+I meet;spotykam
+you meet;spotykasz
+he/she/it meets;spotyka
+we meet;spotykamy
+you (plural) meet;spotykacie
+they meet;spotykają
+to talk on the telephone (verb + adverb);rozmawiać telefonicznie
+to talk on the telephone (verb + prepositional phras, less natural);rozmawiać przez telefon
+I talk;rozmawiam
+you talk;rozmawiasz
+he/she/it talks;rozmawia
+we talk;rozmawiamy
+you (plural) talk;rozmawiacie
+they talk;rozmawiają
+to get undressed;rozbierać się
+I get undressed;rozbieram
+you get undressed;rozbierasz
+he/she/it gets undressed;rozbiera
+we get undressed;rozbieramy
+you (plural) get undressed;rozbieracie
+they get undressed;rozbierają
+to sleep;spać
+I sleep;śpię
+you sleep;śpisz
+he/she/it sleeps;śpi
+we sleep;śpimy
+you (plural) sleep;śpicie
+they sleep;śpią
+to sing;śpiewać
+I sing;śpiewam
+you sing;śpiewasz
+he/she/it sings;śpiewa
+we sing;śpiewamy
+you (plural) sing;śpiewacie
+they sing;śpiewają

@@ -1,0 +1,70 @@
+#separator:semicolon
+#html:true
+0;zero
+1;jeden
+1 (feminine);jedna
+2;dwa
+2 (feminine);dwie
+3;trzy
+4;cztery
+5;pięć
+6;sześć
+7;siedem
+8;osiem
+9;dziewięć
+10;dziesięć
+11;jedenaście
+12;dwanaście
+13;trzynaście
+14;czternaście
+15;piętnaście
+16;szesnaście
+17;siedemnaście
+18;osiemnaście
+19;dziewiętnaście
+20;dwadzieścia
+21;dwadzieścia jeden
+22;dwadzieścia dwa
+23;dwadzieścia trzy
+24;dwadzieścia cztery
+25;dwadzieścia pięć
+26;dwadzieścia sześć
+27;dwadzieścia siedem
+28;dwadzieścia osiem
+29;dwadzieścia dziewięć
+30;trzydzieści
+40;czterdzieści
+50;pięćdziesiąt
+60;sześćdziesiąt
+70;siedemdziesiąt
+80;osiemdziesiąt
+90;dziewięćdziesiąt
+100;sto
+200;dwieście
+1000;tysiąc
+2000;dwa tysiące
+1st;pierwszy
+2nd;drugi
+3rd;trzeci
+4th;czwarty
+5th;piąty
+6th;szósty
+7th;siódmy
+8th;ósmy
+9th;dziewiąty
+10th;dziesiąty
+11th;jedenasty
+12th;dwunasty
+13th;trzynasty
+14th;czternasty
+15th;piętnasty
+16th;szesnasty
+17th;siedemnasty
+18th;osiemnasty
+19th;dziewiętnasty
+20th;dwudziesty
+21st;dwudziesty pierwszy
+22nd;dwudziesty drugi
+23rd;dwudziesty trzeci
+24th;dwudziesty czwarty
+25th;dwudziesty piąty

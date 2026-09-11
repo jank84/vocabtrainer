@@ -1,0 +1,31 @@
+#separator:semicolon
+#html:true
+Monday;poniedziałek
+Tuesday;wtorek
+Wednesday;środa
+Thursday;czwartek
+Friday;piątek
+Saturday;sobota
+Sunday;niedziela
+January;styczeń
+February;luty
+March;marzec
+April;kwiecień
+May;maj
+June;czerwiec
+July;lipiec
+August;sierpień
+September;wrzesień
+October;październik
+November;listopad
+December;grudzień
+morning;poranek
+afternoon;popołudnie
+evening;wieczór
+night;noc
+noon;południe
+midnight;północ
+in the morning (adverbial form);rano
+in the afternoon (adverbial form);po południu
+in the evening (adverbial form);wieczorem
+at night (adverbial form);w nocy

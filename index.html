@@ -1997,7 +1997,11 @@
       'colors.txt',
       'lesson-5.txt',
       'lesson-6.txt',
-      'Lekcja-6_str50-51.txt'
+      'Lekcja-6_str50-51.txt',
+      'daily_routine_words.txt',
+      'days_and_months.txt',
+      'frequency_adverbs.txt',
+      'numbers_extended.txt'
     ];
     const FILES_REGISTRY_KEY = 'anki_scribe_files';      // JSON array of {slug, name}
     const ACTIVE_FILE_KEY = 'anki_scribe_active_file';    // slug of last-used file
@@ -2673,9 +2677,21 @@
     // ---- Changelog / "What's New" dialog ----
     // Bump APP_VERSION whenever a new entry is added; the dialog is then shown
     // exactly once after the new version has been installed and opened.
-    const APP_VERSION = '1.1.0';
+    const APP_VERSION = '1.5.0';
     const CHANGELOG_KEY = 'anki_scribe_seen_version';
     const CHANGELOG = {
+      '1.5.0': [
+        'New vocabulary added: "numbers_extended" — topic: numbers extended (ordinal and kardinal numbers).'
+      ],
+      '1.4.0': [
+        'New vocabulary added: "frequency_adverbs" — topic: Frequencey adverbs.'
+      ],
+      '1.3.0': [
+        'New vocabulary added: "days_and_months" — topic: Days and months.'
+      ],
+      '1.2.0': [
+        'New vocabulary added: "daily_routine_words" — topic: Verbs for daily routines.'
+      ],
       '1.1.0': [
         'New vocabulary added: "Lekcja-6_str50-51" — topic: Food.'
       ]
