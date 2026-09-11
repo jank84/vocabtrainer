@@ -4,10 +4,11 @@
 # ///
 """Register a new vocabulary text file in Anki Scribe.
 
-Performs three edits:
+Performs these edits:
   1. index.html  -> add the filename to DEFAULT_VOCAB_FILES
   2. index.html  -> bump APP_VERSION and add a CHANGELOG entry
-  3. sw.js       -> bump CACHE_NAME (anki-scribe-vN -> vN+1)
+  3. index.html  -> update APP_RELEASE_DATE to today's date
+  4. sw.js       -> bump CACHE_NAME (anki-scribe-vN -> vN+1)
 
 Usage:
     uv run add_vocab.py Lekcja-7_str60.txt --topic "Travel"
@@ -20,6 +21,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from datetime import date
 from pathlib import Path
 
 from rich.console import Console
@@ -37,6 +39,7 @@ RE_VOCAB_LIST = re.compile(
 )
 RE_APP_VERSION = re.compile(r"(const APP_VERSION = ')([0-9]+\.[0-9]+\.[0-9]+)(';)")
 RE_CHANGELOG = re.compile(r"(const CHANGELOG = \{\n)", re.DOTALL)
+RE_RELEASE_DATE = re.compile(r"(const APP_RELEASE_DATE = ')(\d{4}-\d{2}-\d{2})(';)")
 RE_CACHE_NAME = re.compile(r"(const CACHE_NAME = 'anki-scribe-v)(\d+)(';)")
 
 
@@ -87,7 +90,7 @@ def bump_version_and_changelog(
     stem = js_string(Path(filename).stem)
     entry = (
         f"      '{new_version}': [\n"
-        f"        'New vocabulary added: \"{stem}\" \u2014 topic: {js_string(topic)}.'\n"
+        f"        'Added: \"{stem}\" \u2014 topic: {js_string(topic)}.'\n"
         f"      ],\n"
     )
     cl = RE_CHANGELOG.search(html)
@@ -96,6 +99,21 @@ def bump_version_and_changelog(
     html = html[: cl.end()] + entry + html[cl.end() :]
 
     return html, old_version, new_version
+
+
+def update_release_date(html: str, new_date: str) -> tuple[str, str, str]:
+    match = RE_RELEASE_DATE.search(html)
+    if not match:
+        raise StepError("APP_RELEASE_DATE constant not found in index.html")
+    old = match.group(2)
+    html = (
+        html[: match.start()]
+        + match.group(1)
+        + new_date
+        + match.group(3)
+        + html[match.end() :]
+    )
+    return html, old, new_date
 
 
 def bump_cache_name(js: str) -> tuple[str, str, str]:
@@ -148,6 +166,7 @@ def main() -> int:
         html, old_version, new_version = bump_version_and_changelog(
             html, filename, args.topic, args.bump
         )
+        html, old_date, new_date = update_release_date(html, date.today().isoformat())
 
         js = SW.read_text(encoding="utf-8")
         js, old_cache, new_cache = bump_cache_name(js)
@@ -163,6 +182,7 @@ def main() -> int:
     table.add_row("index.html list", "", list_note)
     table.add_row("APP_VERSION", old_version, new_version)
     table.add_row("Changelog topic", "-", args.topic)
+    table.add_row("Release date", old_date, new_date)
     table.add_row("sw.js CACHE_NAME", old_cache, new_cache)
 
     console.print(Panel(table, title="Anki Scribe - add vocabulary", border_style="cyan"))

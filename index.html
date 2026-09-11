@@ -975,10 +975,12 @@
       min-width: 56px;
       font-weight: 700;
       color: var(--primary);
+      display: flex;
+      flex-direction: column;
     }
 
     .version-entry .version-current {
-      margin-left: 4px;
+      margin-top: 2px;
       font-size: 10px;
       font-weight: 600;
       color: var(--success, #16a34a);
@@ -2724,24 +2726,43 @@
     // Bump APP_VERSION whenever a new entry is added; the dialog is then shown
     // exactly once after the new version has been installed and opened.
     const APP_VERSION = '1.5.0';
+    const APP_RELEASE_DATE = '2026-09-11';
     const CHANGELOG_KEY = 'anki_scribe_seen_version';
     const CHANGELOG = {
       '1.5.0': [
-        'New vocabulary added: "numbers_extended" — topic: numbers extended (ordinal and kardinal numbers).'
+        'Added: "numbers_extended" — topic: numbers extended (ordinal and kardinal numbers).'
       ],
       '1.4.0': [
-        'New vocabulary added: "frequency_adverbs" — topic: Frequencey adverbs.'
+        'Added: "frequency_adverbs" — topic: Frequencey adverbs.'
       ],
       '1.3.0': [
-        'New vocabulary added: "days_and_months" — topic: Days and months.'
+        'Added: "days_and_months" — topic: Days and months.'
       ],
       '1.2.0': [
-        'New vocabulary added: "daily_routine_words" — topic: Verbs for daily routines.'
+        'Added: "daily_routine_words" — topic: Verbs for daily routines.'
       ],
       '1.1.0': [
-        'New vocabulary added: "Lekcja-6_str50-51" — topic: Food.'
+        'Added: "Lekcja-6_str50-51" — topic: Food.'
       ]
     };
+
+    // Version label shown at the bottom of the settings menu:
+    // CACHE_NAME from sw.js (e.g. v30) + release date. Falls back to
+    // APP_VERSION if sw.js cannot be fetched (e.g. opened via file://).
+    let swCacheVersion = null;
+    fetch('sw.js')
+      .then(r => (r.ok ? r.text() : null))
+      .then(text => {
+        if (!text) return;
+        const m = text.match(/const CACHE_NAME = 'anki-scribe-v(\d+)';/);
+        if (m) swCacheVersion = m[1];
+      })
+      .catch(() => {});
+
+    function versionLabelText() {
+      const v = swCacheVersion ? `v${swCacheVersion}` : APP_VERSION;
+      return `${v} (${APP_RELEASE_DATE})`;
+    }
 
     const changelogOverlay = document.getElementById('changelogOverlay');
     const changelogClose = document.getElementById('changelogClose');
@@ -3827,7 +3848,7 @@
           </div>
         </div>
         <button class="btn-clear-stats" id="btnClearStats">Reset All Statistics</button>
-        <small>v2026-06-01-18:08</small>
+        <small>${versionLabelText()}</small>
       `;
       statsBody.innerHTML = html;
 
