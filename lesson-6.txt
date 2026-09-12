@@ -52,7 +52,7 @@ my friends (expression);moje koleżanki
 can / to be able to (verb);móc
 my brother (expression);mój brat
 my dad (expression);mój tata
-have to; must (verb);musieć
+have to / must (verb);musieć
 on the market (expression);na rynku
 at the university (expression);na uniwersytecie
 on holidays (expression);na wakacjach
