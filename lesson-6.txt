@@ -49,7 +49,7 @@ May I? (expression);Mogę?
 my daughter (expression);moja córka
 my sister (expression);moja siostra
 my friends (expression);moje koleżanki
-can; to be able to (verb);móc
+can / to be able to (verb);móc
 my brother (expression);mój brat
 my dad (expression);mój tata
 have to; must (verb);musieć
