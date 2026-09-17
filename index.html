@@ -642,9 +642,14 @@
     .stat-box.wrong .number { color: var(--danger); }
 
     .vocab-stats-list {
-      display: flex;
+      display: none;
       flex-direction: column;
       gap: 6px;
+      margin-top: 6px;
+    }
+
+    .vocab-stats-list.open {
+      display: flex;
     }
 
     .vocab-stat-item {
@@ -2725,10 +2730,13 @@
     // ---- Changelog / "What's New" dialog ----
     // Bump APP_VERSION whenever a new entry is added; the dialog is then shown
     // exactly once after the new version has been installed and opened.
-    const APP_VERSION = '1.5.0';
-    const APP_RELEASE_DATE = '2026-09-11';
+    const APP_VERSION = '1.5.1';
+    const APP_RELEASE_DATE = '2026-09-17';
     const CHANGELOG_KEY = 'anki_scribe_seen_version';
     const CHANGELOG = {
+      '1.5.1': [
+        'fixed: all show vocabulary in menu'
+      ],
       '1.5.0': [
         'Added: "numbers_extended" — topic: numbers extended (ordinal and kardinal numbers).'
       ],
@@ -3756,13 +3764,13 @@
           </div>
           <button class="btn-skip-batch" id="btnSkipBatch">Skip Batch (get new words)</button>
           <div class="batch-toggle" id="batchToggle">
-            <span>View Current Batch (${currentBatch.length} words)</span>
+            <span>View All Words (${VOCABULARY.length} words)</span>
             <svg class="toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
           <div class="batch-word-list" id="batchWordList">
       `;
 
-      currentBatch.forEach(v => {
+      VOCABULARY.forEach(v => {
         html += `
             <div class="batch-word-item">
               <div>
@@ -3800,7 +3808,11 @@
             <div class="label">Easy</div>
           </div>
         </div>
-        <div class="vocab-stats-list">
+        <div class="batch-toggle" id="statsToggle">
+          <span>Per-Word Stats (${currentBatch.length} words)</span>
+          <svg class="toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="vocab-stats-list" id="vocabStatsList">
       `;
 
       currentBatch.forEach(v => {
@@ -3868,6 +3880,14 @@
       document.getElementById("batchToggle").addEventListener("click", () => {
         const toggle = document.getElementById("batchToggle");
         const list = document.getElementById("batchWordList");
+        toggle.classList.toggle("open");
+        list.classList.toggle("open");
+      });
+
+      // Per-word stats list toggle
+      document.getElementById("statsToggle").addEventListener("click", () => {
+        const toggle = document.getElementById("statsToggle");
+        const list = document.getElementById("vocabStatsList");
         toggle.classList.toggle("open");
         list.classList.toggle("open");
       });

@@ -36,17 +36,16 @@ Open **[jank84.github.io/vocabtrainer](https://jank84.github.io/vocabtrainer/)**
 
 > The first load downloads Tesseract language data from CDN (~50–100 MB). Subsequent loads are fully offline.
 
-### Run Locally
+### Testing Changes Locally
 
-Clone the repo and serve it over HTTP (required for service workers):
+The site is plain static files with no build step — you can test any change in your working copy before committing or pushing. From the repo root, serve the folder over HTTP:
 
 ```bash
-git clone https://github.com/jank84/vocabtrainer.git
-cd vocabtrainer
-python -m http.server 8000
+uv run -m http.server 8000
+# or, if you have Python on PATH: python -m http.server 8000
 ```
 
-Then open `http://localhost:8000`.
+Then open `http://localhost:8000` in your browser.
 
 ---
 

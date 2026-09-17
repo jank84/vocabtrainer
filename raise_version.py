@@ -2,18 +2,22 @@
 # requires-python = ">=3.11"
 # dependencies = ["rich>=13.7"]
 # ///
-"""Register a new vocabulary text file in Anki Scribe.
+"""Register a new vocabulary text file in Anki Scribe, or release an update.
 
-Performs these edits:
+With a file argument, performs these edits:
   1. index.html  -> add the filename to DEFAULT_VOCAB_FILES
   2. index.html  -> bump APP_VERSION and add a CHANGELOG entry
   3. index.html  -> update APP_RELEASE_DATE to today's date
   4. sw.js       -> bump CACHE_NAME (anki-scribe-vN -> vN+1)
 
+Without a file argument (technical changes / fixes), only steps 2-4 are
+performed and the changelog entry is taken from --update-text.
+
 Usage:
-    uv run add_vocab.py Lekcja-7_str60.txt --topic "Travel"
-    uv run add_vocab.py new.txt --topic Food --bump minor
-    uv run add_vocab.py new.txt --topic Food --dry-run
+    uv run raise_version.py Lekcja-7_str60.txt --topic "Travel"
+    uv run raise_version.py new.txt --topic Food --bump minor
+    uv run raise_version.py --update-text "Fixed a bug in the export dialog" --bump patch
+    uv run raise_version.py new.txt --topic Food --dry-run
 """
 
 from __future__ import annotations
@@ -77,7 +81,7 @@ def add_to_vocab_list(html: str, filename: str) -> tuple[str, str]:
 
 
 def bump_version_and_changelog(
-    html: str, filename: str, topic: str, part: str
+    html: str, entry_lines: list[str], part: str
 ) -> tuple[str, str, str]:
     match = RE_APP_VERSION.search(html)
     if not match:
@@ -87,11 +91,10 @@ def bump_version_and_changelog(
     new_version = bump(old_version, part)
     html = html[: match.start()] + match.group(1) + new_version + match.group(3) + html[match.end() :]
 
-    stem = js_string(Path(filename).stem)
     entry = (
         f"      '{new_version}': [\n"
-        f"        'Added: \"{stem}\" \u2014 topic: {js_string(topic)}.'\n"
-        f"      ],\n"
+        + "".join(f"        {line}\n" for line in entry_lines)
+        + "      ],\n"
     )
     cl = RE_CHANGELOG.search(html)
     if not cl:
@@ -128,8 +131,16 @@ def bump_cache_name(js: str) -> tuple[str, str, str]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("file", help="Vocabulary .txt file (must live next to index.html)")
-    parser.add_argument("--topic", required=True, help='Topic shown in the changelog, e.g. "Food"')
+    parser.add_argument(
+        "file",
+        nargs="?",
+        help="Vocabulary .txt file (must live next to index.html); omit for updates without new vocabulary",
+    )
+    parser.add_argument("--topic", help='Topic shown in the changelog, e.g. "Food"')
+    parser.add_argument(
+        "--update-text",
+        help="Changelog entry text; required when no file is given (e.g. for fixes or technical changes)",
+    )
     parser.add_argument(
         "--bump",
         choices=("major", "minor", "patch"),
@@ -143,28 +154,48 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
 
-    source = Path(args.file)
-    target = ROOT / source.name
-    if not target.is_file():
-        console.print(f"[red]Vocabulary file not found:[/red] {target}")
+    if not args.file and not args.update_text:
+        console.print("[red]Provide a vocabulary file or --update-text.[/red]")
         return 1
+    if args.file and not args.topic and not args.update_text:
+        console.print(
+            '[red]--topic is required when adding a vocabulary file (or pass --update-text).[/red]'
+        )
+        return 1
+
+    filename = None
+    line_count = 0
+    if args.file:
+        source = Path(args.file)
+        target = ROOT / source.name
+        if not target.is_file():
+            console.print(f"[red]Vocabulary file not found:[/red] {target}")
+            return 1
+        filename = target.name
+        line_count = sum(
+            1
+            for line in target.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.startswith("#")
+        )
+
     for path in (INDEX, SW):
         if not path.is_file():
             console.print(f"[red]Missing:[/red] {path}")
             return 1
 
-    filename = target.name
-    line_count = sum(
-        1
-        for line in target.read_text(encoding="utf-8").splitlines()
-        if line.strip() and not line.startswith("#")
-    )
-
     try:
         html = INDEX.read_text(encoding="utf-8")
-        html, list_note = add_to_vocab_list(html, filename)
+        list_note = None
+        if filename:
+            html, list_note = add_to_vocab_list(html, filename)
+
+        if args.update_text:
+            entry_lines = [f"'{js_string(args.update_text)}'"]
+        else:
+            stem = js_string(Path(filename).stem)
+            entry_lines = [f"'Added: \"{stem}\" \u2014 topic: {js_string(args.topic)}.'"]
         html, old_version, new_version = bump_version_and_changelog(
-            html, filename, args.topic, args.bump
+            html, entry_lines, args.bump
         )
         html, old_date, new_date = update_release_date(html, date.today().isoformat())
 
@@ -178,14 +209,21 @@ def main() -> int:
     table.add_column("Change")
     table.add_column("Before")
     table.add_column("After", style="green")
-    table.add_row("Vocabulary file", "-", f"{filename} ({line_count} words)")
-    table.add_row("index.html list", "", list_note)
+    if filename:
+        table.add_row("Vocabulary file", "-", f"{filename} ({line_count} words)")
+        table.add_row("index.html list", "", list_note)
+    else:
+        table.add_row("Update type", "-", "no new vocabulary (technical change / fix)")
     table.add_row("APP_VERSION", old_version, new_version)
-    table.add_row("Changelog topic", "-", args.topic)
+    if args.update_text:
+        table.add_row("Changelog entry", "-", args.update_text)
+    else:
+        table.add_row("Changelog topic", "-", args.topic)
     table.add_row("Release date", old_date, new_date)
     table.add_row("sw.js CACHE_NAME", old_cache, new_cache)
 
-    console.print(Panel(table, title="Anki Scribe - add vocabulary", border_style="cyan"))
+    title = "Anki Scribe - add vocabulary" if filename else "Anki Scribe - release update"
+    console.print(Panel(table, title=title, border_style="cyan"))
 
     if args.dry_run:
         console.print("[yellow]Dry run - nothing written.[/yellow]")
