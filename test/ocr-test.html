@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>OCR Test - Anki Scribe</title>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f6fa;
+      --surface: #ffffff;
+      --text: #1a1a2e;
+      --text-muted: #6b7280;
+      --primary: #6c7ff8;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --border: #e5e7eb;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      padding: 8px;
+      gap: 6px;
+      max-width: 520px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: var(--surface);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 8px 12px;
+      flex-shrink: 0;
+    }
+
+    .topbar h1 { font-size: 15px; font-weight: 700; }
+
+    .status {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    .status.ready { color: var(--success); }
+    .status.error { color: var(--danger); }
+
+    .canvas-wrapper {
+      flex: 1;
+      background: var(--surface);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+      min-height: 0;
+    }
+
+    .guide {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      height: 0;
+      border-top: 2px dashed;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .guide span {
+      position: absolute;
+      left: 4px;
+      top: -17px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .guide-ceiling { top: 20%; border-color: #f59e0b; }
+    .guide-ceiling span { color: #f59e0b; }
+
+    .guide-baseline { top: 55%; border-color: #3b82f6; }
+    .guide-baseline span { color: #3b82f6; }
+
+    .guide-floor { top: 80%; border-color: #a855f7; }
+    .guide-floor span { color: #a855f7; }
+
+    #drawCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+      cursor: crosshair;
+      z-index: 2;
+    }
+
+    #overlayCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .placeholder {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      color: #cbd2dc;
+      font-size: 17px;
+      font-weight: 500;
+      text-align: center;
+      z-index: 4;
+      transition: opacity 0.3s;
+    }
+
+    .placeholder.hidden { opacity: 0; }
+
+    .legend {
+      display: flex;
+      gap: 12px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      padding: 4px 2px;
+      flex-shrink: 0;
+    }
+
+    .legend .chip { display: flex; align-items: center; gap: 5px; }
+    .legend .swatch { width: 18px; height: 0; border-top: 2px dashed; }
+    .legend .swatch.region { border-color: var(--danger); }
+    .legend .swatch.line { border-color: #0d9488; }
+    .legend .swatch.word { border-color: var(--success); border-top-style: solid; }
+
+    .controls {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn {
+      height: 42px;
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 14px;
+      box-shadow: var(--shadow);
+      transition: transform 0.1s, opacity 0.15s;
+    }
+
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-primary { background: var(--primary); color: #fff; flex: 1; }
+    .btn-secondary { background: var(--surface); color: var(--text); }
+    .btn-region { background: var(--danger); color: #fff; }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 0 10px;
+      height: 42px;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+    }
+
+    .expected-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      padding: 6px 12px;
+      flex-shrink: 0;
+    }
+
+    .expected-row label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .expected-row input {
+      flex: 1;
+      min-width: 0;
+      border: none;
+      outline: none;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      background: transparent;
+    }
+
+    .results {
+      background: var(--surface);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 10px 12px;
+      flex-shrink: 0;
+      max-height: 34%;
+      overflow-y: auto;
+      font-size: 13px;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .results.visible { display: flex; }
+
+    .result-line { display: flex; gap: 8px; align-items: baseline; }
+    .result-line .k {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      min-width: 92px;
+      flex-shrink: 0;
+    }
+    .result-line .v { font-weight: 600; word-break: break-word; }
+    .result-line .v.mono { font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge.pass { background: #dcfce7; color: #16a34a; }
+    .badge.fail { background: #fee2e2; color: #dc2626; }
+
+    .words-list { display: flex; flex-direction: column; gap: 3px; }
+    .word-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      background: var(--bg);
+      border-radius: 6px;
+      padding: 4px 8px;
+    }
+    .word-item .wt { font-weight: 700; }
+    .word-item .wc { color: var(--text-muted); font-family: ui-monospace, Consolas, monospace; }
+
+    .preview-row { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+    .preview-row img {
+      width: 130px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      image-rendering: pixelated;
+    }
+    .preview-caption { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+
+    .info-box {
+      background: #eef2ff;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 11.5px;
+      line-height: 1.45;
+      color: #3730a3;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="main">
+    <div class="topbar">
+      <h1>OCR Test</h1>
+      <span class="status" id="ocrStatus">Loading OCR engine…</span>
+    </div>
+
+    <div class="canvas-wrapper" id="canvasWrapper">
+      <div class="guide guide-ceiling"><span>CEILING · cap height (20%)</span></div>
+      <div class="guide guide-baseline"><span>BASELINE (55%)</span></div>
+      <div class="guide guide-floor"><span>FLOOR · descender (80%)</span></div>
+      <canvas id="drawCanvas"></canvas>
+      <canvas id="overlayCanvas"></canvas>
+      <div class="placeholder" id="placeholder">Write a word here</div>
+    </div>
+
+    <div class="legend">
+      <div class="chip"><span class="swatch region"></span> OCR crop region (ceiling/floor)</div>
+      <div class="chip"><span class="swatch line"></span> detected text lines</div>
+      <div class="chip"><span class="swatch word"></span> words Tesseract detected</div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-region" id="btnRegion">Show OCR region</button>
+      <button class="btn btn-primary" id="btnRun" disabled>Run OCR</button>
+      <button class="btn btn-secondary" id="btnClear">Clear</button>
+      <label class="toggle-label">
+        <input type="checkbox" id="noPreprocess"> raw (skip preprocess)
+      </label>
+    </div>
+
+    <div class="expected-row">
+      <label>Expected</label>
+      <input id="expectedInput" placeholder="optional, e.g. kot" autocomplete="off">
+    </div>
+
+    <div class="results" id="results"></div>
+
+    <div class="info-box">
+      <strong>Where does OCR look?</strong> The whole canvas — it crops to the bounding box of your ink (+40px padding), so there is no fixed zone.
+      Write between the amber CEILING and blue BASELINE (descenders like g, p, y, ą, ę may reach the purple FLOOR).
+      Multiple lines are supported: separate lines with a clear blank gap and they are read top-to-bottom and joined with spaces.
+    </div>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("drawCanvas");
+    const overlay = document.getElementById("overlayCanvas");
+    const wrapper = document.getElementById("canvasWrapper");
+    const placeholder = document.getElementById("placeholder");
+    const statusEl = document.getElementById("ocrStatus");
+    const resultsEl = document.getElementById("results");
+    const btnRun = document.getElementById("btnRun");
+    const btnRegion = document.getElementById("btnRegion");
+    const btnClear = document.getElementById("btnClear");
+    const noPreprocess = document.getElementById("noPreprocess");
+    const expectedInput = document.getElementById("expectedInput");
+
+    let ctx = canvas.getContext("2d");
+    let octx = overlay.getContext("2d");
+    let dpr = 1;
+    let isDrawing = false;
+    let hasDrawn = false;
+    let lastX = 0, lastY = 0;
+    let worker = null;
+
+    function setStatus(text, cls) {
+      statusEl.textContent = text;
+      statusEl.className = "status" + (cls ? " " + cls : "");
+    }
+
+    function resizeCanvases() {
+      const rect = wrapper.getBoundingClientRect();
+      dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      overlay.width = canvas.width;
+      overlay.height = canvas.height;
+      ctx = canvas.getContext("2d");
+      octx = overlay.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, rect.width, rect.height);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.lineWidth = 8;
+      ctx.strokeStyle = "#1a1a2e";
+      octx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      hasDrawn = false;
+      placeholder.classList.remove("hidden");
+    }
+
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      let clientX, clientY;
+      if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+      return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    function startDraw(e) {
+      e.preventDefault();
+      isDrawing = true;
+      const pos = getPos(e);
+      lastX = pos.x;
+      lastY = pos.y;
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+      ctx.lineTo(pos.x + 0.1, pos.y + 0.1);
+      ctx.stroke();
+      if (!hasDrawn) {
+        hasDrawn = true;
+        placeholder.classList.add("hidden");
+      }
+    }
+
+    function draw(e) {
+      if (!isDrawing) return;
+      e.preventDefault();
+      const pos = getPos(e);
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+      lastX = pos.x;
+      lastY = pos.y;
+    }
+
+    function endDraw(e) {
+      if (e) e.preventDefault();
+      isDrawing = false;
+    }
+
+    canvas.addEventListener("mousedown", startDraw);
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("mouseup", endDraw);
+    canvas.addEventListener("mouseleave", endDraw);
+    canvas.addEventListener("touchstart", startDraw, { passive: false });
+    canvas.addEventListener("touchmove", draw, { passive: false });
+    canvas.addEventListener("touchend", endDraw);
+    canvas.addEventListener("touchcancel", endDraw);
+
+    function clearAll() {
+      const rect = wrapper.getBoundingClientRect();
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, rect.width, rect.height);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.lineWidth = 8;
+      ctx.strokeStyle = "#1a1a2e";
+      octx.clearRect(0, 0, rect.width, rect.height);
+      hasDrawn = false;
+      placeholder.classList.remove("hidden");
+    }
+
+    function findInkBounds() {
+      const w = canvas.width, h = canvas.height;
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      const imgData = ctx.getImageData(0, 0, w, h);
+      ctx.restore();
+      const data = imgData.data;
+      let minX = w, minY = h, maxX = -1, maxY = -1;
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const i = (y * w + x) * 4;
+          if (data[i] < 160 || data[i + 1] < 160 || data[i + 2] < 160) {
+            if (x < minX) minX = x;
+            if (y < minY) minY = y;
+            if (x > maxX) maxX = x;
+            if (y > maxY) maxY = y;
+          }
+        }
+      }
+      if (maxX < 0 || maxY < 0) return null;
+      return { minX, minY, maxX, maxY };
+    }
+
+    function getCrop() {
+      const b = findInkBounds();
+      if (!b) return null;
+      const w = canvas.width, h = canvas.height;
+      const pad = Math.round(40 * dpr);
+      const minX = Math.max(0, b.minX - pad);
+      const minY = Math.max(0, b.minY - pad);
+      const maxX = Math.min(w - 1, b.maxX + pad);
+      const maxY = Math.min(h - 1, b.maxY + pad);
+      const cropW = maxX - minX + 1;
+      const cropH = maxY - minY + 1;
+      const c = document.createElement("canvas");
+      c.width = cropW;
+      c.height = cropH;
+      const cc = c.getContext("2d");
+      cc.fillStyle = "#ffffff";
+      cc.fillRect(0, 0, cropW, cropH);
+      cc.drawImage(canvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
+      return { canvas: c, minX, minY, cropW, cropH };
+    }
+
+    function preprocessForOCR(sourceCanvas) {
+      const sw = sourceCanvas.width;
+      const sh = sourceCanvas.height;
+      const srcCtx = sourceCanvas.getContext("2d");
+      const srcData = srcCtx.getImageData(0, 0, sw, sh);
+      const src = srcData.data;
+
+      const gray = new Uint8Array(sw * sh);
+      for (let i = 0; i < sw * sh; i++) {
+        const r = src[i * 4], g = src[i * 4 + 1], b = src[i * 4 + 2];
+        gray[i] = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+      }
+
+      const threshold = 180;
+      const binary = new Uint8Array(sw * sh);
+      for (let i = 0; i < sw * sh; i++) {
+        binary[i] = gray[i] < threshold ? 0 : 255;
+      }
+
+      const minHeight = 140;
+      const scale = sh < minHeight ? minHeight / sh : 1;
+      const dw = Math.round(sw * scale);
+      const dh = Math.round(sh * scale);
+
+      let workCanvas = document.createElement("canvas");
+      workCanvas.width = sw;
+      workCanvas.height = sh;
+      const workCtx = workCanvas.getContext("2d");
+      const outData = workCtx.createImageData(sw, sh);
+      for (let i = 0; i < sw * sh; i++) {
+        const v = binary[i];
+        outData.data[i * 4] = v;
+        outData.data[i * 4 + 1] = v;
+        outData.data[i * 4 + 2] = v;
+        outData.data[i * 4 + 3] = 255;
+      }
+      workCtx.putImageData(outData, 0, 0);
+
+      if (scale > 1) {
+        const scaledCanvas = document.createElement("canvas");
+        scaledCanvas.width = dw;
+        scaledCanvas.height = dh;
+        const scaledCtx = scaledCanvas.getContext("2d");
+        scaledCtx.imageSmoothingEnabled = false;
+        scaledCtx.drawImage(workCanvas, 0, 0, dw, dh);
+        workCanvas = scaledCanvas;
+      }
+
+      // Dilate after upscaling so letter counters stay large enough to survive.
+      // Only ONE pass: two passes fill the counters of o/d/e/p and break OCR.
+      const w2 = workCanvas.width;
+      const h2 = workCanvas.height;
+      const ctx2 = workCanvas.getContext("2d");
+      const img2 = ctx2.getImageData(0, 0, w2, h2);
+      const px = img2.data;
+      const input = new Uint8Array(px.length);
+      for (let i = 0; i < px.length; i += 4) input[i] = px[i];
+      for (let y = 1; y < h2 - 1; y++) {
+        for (let x = 1; x < w2 - 1; x++) {
+          const idx = (y * w2 + x) * 4;
+          if (input[idx] === 0) continue;
+          let isNearInk = false;
+          for (let dy = -1; dy <= 1 && !isNearInk; dy++) {
+            for (let dx = -1; dx <= 1 && !isNearInk; dx++) {
+              if (input[((y + dy) * w2 + (x + dx)) * 4] === 0) isNearInk = true;
+            }
+          }
+          if (isNearInk) { px[idx] = 0; px[idx + 1] = 0; px[idx + 2] = 0; }
+        }
+      }
+      ctx2.putImageData(img2, 0, 0);
+
+      return { canvas: workCanvas, scale };
+    }
+
+    function findLineBands(cropCanvas) {
+      const sw = cropCanvas.width, sh = cropCanvas.height;
+      const data = cropCanvas.getContext("2d").getImageData(0, 0, sw, sh).data;
+      const rowInk = new Uint8Array(sh);
+      for (let y = 0; y < sh; y++) {
+        let count = 0;
+        for (let x = 0; x < sw; x++) {
+          const i = (y * sw + x) * 4;
+          if (data[i] < 160 || data[i + 1] < 160 || data[i + 2] < 160) count++;
+        }
+        rowInk[y] = count;
+      }
+      const bands = [];
+      let start = -1;
+      for (let y = 0; y <= sh; y++) {
+        const has = y < sh && rowInk[y] > 0;
+        if (has && start < 0) start = y;
+        if (!has && start >= 0) { bands.push({ top: start, bottom: y - 1 }); start = -1; }
+      }
+      const minGap = Math.max(24 * dpr, sh * 0.10);
+      const merged = [];
+      for (const b of bands) {
+        const last = merged[merged.length - 1];
+        if (last && b.top - last.bottom - 1 < minGap) last.bottom = b.bottom;
+        else merged.push({ top: b.top, bottom: b.bottom });
+      }
+      return merged;
+    }
+
+    function normalizeText(text) {
+      return text.trim().toLowerCase().replace(/[^a-ząćęłńóśźż]/g, "");
+    }
+
+    function levenshtein(a, b) {
+      const m = a.length, n = b.length;
+      const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+      for (let i = 0; i <= m; i++) dp[i][0] = i;
+      for (let j = 0; j <= n; j++) dp[0][j] = j;
+      for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+          dp[i][j] = Math.min(
+            dp[i - 1][j] + 1,
+            dp[i][j - 1] + 1,
+            dp[i - 1][j - 1] + (a[i - 1] !== b[j - 1] ? 1 : 0)
+          );
+        }
+      }
+      return dp[m][n];
+    }
+
+    function clearOverlay() {
+      const rect = wrapper.getBoundingClientRect();
+      octx.clearRect(0, 0, rect.width, rect.height);
+    }
+
+    function drawRegionBox(crop) {
+      const cw = canvas.width / dpr;
+      const ch = canvas.height / dpr;
+      const x = crop.minX / dpr;
+      const y = crop.minY / dpr;
+      const w = crop.cropW / dpr;
+      const h = crop.cropH / dpr;
+
+      octx.clearRect(0, 0, cw, ch);
+      octx.fillStyle = "rgba(30, 41, 59, 0.28)";
+      octx.fillRect(0, 0, cw, ch);
+      octx.globalCompositeOperation = "destination-out";
+      octx.fillRect(x, y, w, h);
+      octx.globalCompositeOperation = "source-over";
+
+      octx.strokeStyle = "#ef4444";
+      octx.lineWidth = 2;
+      octx.setLineDash([8, 6]);
+      octx.strokeRect(x, y, w, h);
+      octx.setLineDash([]);
+
+      octx.font = "700 11px Inter, sans-serif";
+      octx.fillStyle = "#ef4444";
+      const topLabel = "CEILING  y=" + Math.round(y) + "px";
+      const botLabel = "FLOOR  y=" + Math.round(y + h) + "px";
+      octx.fillText(topLabel, x + 6, Math.max(12, y - 6));
+      octx.fillText(botLabel, x + 6, y + h + 16);
+    }
+
+    function drawBandBoxes(crop, bands) {
+      if (bands.length <= 1) return;
+      for (let i = 0; i < bands.length; i++) {
+        const b = bands[i];
+        const x = crop.minX / dpr;
+        const y = (crop.minY + b.top) / dpr;
+        const w = crop.cropW / dpr;
+        const h = (b.bottom - b.top + 1) / dpr;
+        octx.strokeStyle = "#0d9488";
+        octx.lineWidth = 2;
+        octx.strokeRect(x, y, w, h);
+        octx.font = "700 11px Inter, sans-serif";
+        octx.fillStyle = "#0d9488";
+        octx.fillText("LINE " + (i + 1), x + w - 52, y + 14);
+      }
+    }
+
+    function drawWordBoxes(words, crop) {
+      for (const word of words) {
+        const b = word.bbox;
+        if (!b) continue;
+        const scale = word.scale || 1;
+        const offY = word.offY || 0;
+        const x = (crop.minX + b.x0 / scale) / dpr;
+        const y = (crop.minY + offY + b.y0 / scale) / dpr;
+        const w = (b.x1 - b.x0) / scale / dpr;
+        const h = (b.y1 - b.y0) / scale / dpr;
+        octx.strokeStyle = "#22c55e";
+        octx.lineWidth = 2;
+        octx.strokeRect(x, y, w, h);
+        octx.font = "700 10px Inter, sans-serif";
+        octx.fillStyle = "#16a34a";
+        octx.fillText(word.text + " (" + Math.round(word.confidence) + ")", x, Math.max(10, y - 4));
+      }
+    }
+
+    function extractWords(data) {
+      if (Array.isArray(data.words)) return data.words;
+      const out = [];
+      for (const block of data.blocks || []) {
+        for (const para of block.paragraphs || []) {
+          for (const line of para.lines || []) {
+            for (const word of line.words || []) out.push(word);
+          }
+        }
+      }
+      return out;
+    }
+
+    function showResults(r) {
+      let html = "";
+      if (r.error) {
+        html += '<div class="result-line"><span class="k">Error</span><span class="v">' + r.error + "</span></div>";
+      } else {
+        html += '<div class="result-line"><span class="k">Raw OCR</span><span class="v mono">' + (r.raw || "(empty)") + "</span></div>";
+        html += '<div class="result-line"><span class="k">Normalized</span><span class="v mono">' + (r.norm || "(empty)") + "</span></div>";
+        html += '<div class="result-line"><span class="k">Confidence</span><span class="v">' + Math.round(r.confidence) + " / 100 · " + r.ms + " ms</span></div>";
+        html += '<div class="result-line"><span class="k">Lines detected</span><span class="v">' + r.lines.length + (r.lines.length > 1 ? " (OCR run per line, joined with spaces)" : "") + "</span></div>";
+        html += '<div class="result-line"><span class="k">Crop region</span><span class="v mono">x=' + Math.round(r.crop.minX / dpr) + " y=" + Math.round(r.crop.minY / dpr) + " w=" + Math.round(r.crop.cropW / dpr) + " h=" + Math.round(r.crop.cropH / dpr) + " px</span></div>";
+        html += '<div class="result-line"><span class="k">Upscale</span><span class="v">' + r.lines.map(l => l.scale.toFixed(2) + "x → " + l.procW + "×" + l.procH + " px").join(" · ") + "</span></div>";
+
+        if (r.match) {
+          const m = r.match;
+          html += '<div class="result-line"><span class="k">Match "' + m.expected + '"</span><span class="v">distance ' + m.dist + " / allowed " + m.threshold + ' <span class="badge ' + (m.pass ? "pass\">PASS" : "fail\">FAIL") + "</span></span></div>";
+        }
+
+        if (r.words.length) {
+          html += '<div class="result-line"><span class="k">Words (' + r.words.length + ")</span><span class=\"v\"><div class=\"words-list\">";
+          for (const w of r.words) {
+            const b = w.bbox || {};
+            html += '<div class="word-item"><span class="wt">' + w.text + '</span><span class="wc">' + Math.round(w.confidence) + "% · " + Math.round(b.x0 || 0) + "," + Math.round(b.y0 || 0) + "–" + Math.round(b.x1 || 0) + "," + Math.round(b.y1 || 0) + "</span></div>";
+          }
+          html += "</div></span></div>";
+        } else {
+          html += '<div class="result-line"><span class="k">Words</span><span class="v" style="color:var(--danger)">none detected</span></div>';
+        }
+
+        html += '<div class="result-line"><span class="k">Sent images</span><span class="v"><div class="preview-row">' + r.lines.map((l, i) => '<img id="ocrPreviewImg' + i + '" alt="line ' + (i + 1) + '">').join("") + '<div class="preview-caption">What Tesseract actually sees (one image per detected line):<br>binarized → dilated 2× → upscaled to ≥140px height.</div></div></span></div>';
+      }
+      resultsEl.innerHTML = html;
+      resultsEl.classList.add("visible");
+    }
+
+    function preprocessOne(sourceCanvas) {
+      if (noPreprocess.checked) return { canvas: sourceCanvas, scale: 1 };
+      return preprocessForOCR(sourceCanvas);
+    }
+
+    async function recognizeLine(subCanvas) {
+      const p = preprocessOne(subCanvas);
+      const dataUrl = p.canvas.toDataURL("image/png");
+      const t0 = performance.now();
+      const result = await worker.recognize(dataUrl);
+      const ms = Math.round(performance.now() - t0);
+      return {
+        text: result.data.text || "",
+        confidence: result.data.confidence || 0,
+        words: extractWords(result.data),
+        scale: p.scale,
+        dataUrl,
+        procW: p.canvas.width,
+        procH: p.canvas.height,
+        ms
+      };
+    }
+
+    async function runOCR() {
+      if (!worker) return;
+      btnRun.disabled = true;
+      btnRun.textContent = "…";
+      clearOverlay();
+      try {
+        const crop = getCrop();
+        if (!crop) {
+          showResults({ error: "Nothing drawn yet — write something first." });
+          return;
+        }
+        drawRegionBox(crop);
+
+        const bands = findLineBands(crop.canvas);
+        drawBandBoxes(crop, bands);
+
+        let lines;
+        if (bands.length <= 1) {
+          lines = [await recognizeLine(crop.canvas)];
+        } else {
+          lines = [];
+          for (const band of bands) {
+            const pad = Math.round(24 * dpr);
+            const top = Math.max(0, band.top - pad);
+            const bottom = Math.min(crop.cropH - 1, band.bottom + pad);
+            const sub = document.createElement("canvas");
+            sub.width = crop.cropW;
+            sub.height = bottom - top + 1;
+            const sc = sub.getContext("2d");
+            sc.fillStyle = "#ffffff";
+            sc.fillRect(0, 0, sub.width, sub.height);
+            sc.drawImage(crop.canvas, 0, top, crop.cropW, sub.height, 0, 0, crop.cropW, sub.height);
+            const r = await recognizeLine(sub);
+            r.offY = top;
+            lines.push(r);
+          }
+        }
+
+        const raw = lines.map(l => l.text).join(" ");
+        const norm = normalizeText(raw);
+        const words = [];
+        for (const l of lines) {
+          for (const w of l.words) {
+            words.push({ text: w.text, confidence: w.confidence, bbox: w.bbox, scale: l.scale, offY: l.offY || 0 });
+          }
+        }
+        drawWordBoxes(words, crop);
+
+        let match = null;
+        const expected = normalizeText(expectedInput.value);
+        if (expected) {
+          const dist = levenshtein(norm, expected);
+          const threshold = expected.length >= 7 ? 2 : expected.length >= 4 ? 1 : 0;
+          match = { expected, dist, threshold, pass: norm.length > 0 && dist <= threshold };
+        }
+
+        showResults({
+          raw, norm,
+          confidence: lines.reduce((s, l) => s + l.confidence, 0) / lines.length,
+          ms: lines.reduce((s, l) => s + l.ms, 0),
+          crop,
+          lines,
+          words, match
+        });
+        lines.forEach((l, i) => {
+          const img = document.getElementById("ocrPreviewImg" + i);
+          if (img) img.src = l.dataUrl;
+        });
+      } catch (err) {
+        console.error(err);
+        showResults({ error: String(err) });
+      }
+      btnRun.disabled = false;
+      btnRun.textContent = "Run OCR";
+    }
+
+    function showRegionOnly() {
+      clearOverlay();
+      const crop = getCrop();
+      if (!crop) {
+        resultsEl.innerHTML = '<div class="result-line"><span class="k">Region</span><span class="v" style="color:var(--danger)">Nothing drawn yet.</span></div>';
+        resultsEl.classList.add("visible");
+        return;
+      }
+      drawRegionBox(crop);
+      const cw = canvas.width / dpr, ch = canvas.height / dpr;
+      resultsEl.innerHTML =
+        '<div class="result-line"><span class="k">Crop region</span><span class="v mono">x=' + Math.round(crop.minX / dpr) + " y=" + Math.round(crop.minY / dpr) + " w=" + Math.round(crop.cropW / dpr) + " h=" + Math.round(crop.cropH / dpr) + " px</span></div>" +
+        '<div class="result-line"><span class="k">Ceiling / floor</span><span class="v mono">top=' + Math.round(crop.minY / dpr) + "px (" + Math.round(100 * crop.minY / canvas.height) + "%) · bottom=" + Math.round((crop.minY + crop.cropH) / dpr) + "px (" + Math.round(100 * (crop.minY + crop.cropH) / canvas.height) + "%)</span></div>" +
+        '<div class="result-line"><span class="k">Canvas</span><span class="v mono">' + Math.round(cw) + "×" + Math.round(ch) + " px @ " + dpr + "x DPR</span></div>";
+      resultsEl.classList.add("visible");
+    }
+
+    async function initOCR() {
+      try {
+        worker = await Tesseract.createWorker("pol+eng", 1, {
+          logger: (m) => {
+            if (m.status === "loading language traineddata") {
+              setStatus("Loading language data…");
+            } else if (m.status === "initializing api" || m.status === "recognizing text") {
+              setStatus("Starting OCR engine…");
+            }
+          }
+        });
+        await worker.setParameters({
+          tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE,
+        });
+        setStatus("Ready", "ready");
+        btnRun.disabled = false;
+      } catch (err) {
+        console.error(err);
+        setStatus("OCR failed to load", "error");
+      }
+    }
+
+    window.addEventListener("resize", () => {
+      clearTimeout(window._resizeTimer);
+      window._resizeTimer = setTimeout(() => {
+        resizeCanvases();
+        resultsEl.classList.remove("visible");
+      }, 150);
+    });
+
+    btnRun.addEventListener("click", runOCR);
+    btnRegion.addEventListener("click", showRegionOnly);
+    btnClear.addEventListener("click", () => {
+      clearAll();
+      resultsEl.classList.remove("visible");
+    });
+
+    resizeCanvases();
+    initOCR();
+  </script>
+</body>
+</html>

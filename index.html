@@ -2905,10 +2905,13 @@
     // ---- Changelog / "What's New" dialog ----
     // Bump APP_VERSION whenever a new entry is added; the dialog is then shown
     // exactly once after the new version has been installed and opened.
-    const APP_VERSION = '1.7.0';
+    const APP_VERSION = '1.8.0';
     const APP_RELEASE_DATE = '2026-09-17';
     const CHANGELOG_KEY = 'anki_scribe_seen_version';
     const CHANGELOG = {
+      '1.8.0': [
+        'Improve OCR'
+      ],
       '1.7.0': [
         'Added: "adjectives_p31-32" — topic: Adjectives from page 31,32.'
       ],
@@ -3520,8 +3523,9 @@
 
     // Preprocess the canvas image for better OCR recognition:
     // 1. Binarize (pure black/white, remove anti-aliasing)
-    // 2. Dilate (thicken strokes so Tesseract sees them clearly)
-    // 3. Scale up to a minimum height (Tesseract needs ~50-70px tall chars)
+    // 2. Scale up to a minimum height (Tesseract needs ~50-70px tall chars)
+    // 3. Dilate (thicken strokes so Tesseract sees them clearly) - done AFTER
+    //    upscaling so letter counters stay large enough to survive dilation
     function preprocessForOCR(sourceCanvas) {
       const sw = sourceCanvas.width;
       const sh = sourceCanvas.height;
@@ -3544,34 +3548,7 @@
         binary[i] = gray[i] < threshold ? 0 : 255; // 0 = ink, 255 = background
       }
 
-      // --- Step 2: Dilate (thicken strokes) ---
-      // 3x3 dilation: if any neighbor is ink (0), pixel becomes ink
-      const dilated = new Uint8Array(sw * sh);
-      dilated.set(binary);
-      for (let pass = 0; pass < 2; pass++) { // 2 passes for stronger dilation
-        const input = pass === 0 ? binary : dilated.slice();
-        for (let y = 1; y < sh - 1; y++) {
-          for (let x = 1; x < sw - 1; x++) {
-            const idx = y * sw + x;
-            if (input[idx] === 0) {
-              dilated[idx] = 0;
-              continue;
-            }
-            // Check 3x3 neighborhood
-            let isNearInk = false;
-            for (let dy = -1; dy <= 1 && !isNearInk; dy++) {
-              for (let dx = -1; dx <= 1 && !isNearInk; dx++) {
-                if (input[(y + dy) * sw + (x + dx)] === 0) {
-                  isNearInk = true;
-                }
-              }
-            }
-            dilated[idx] = isNearInk ? 0 : 255;
-          }
-        }
-      }
-
-      // --- Step 3: Scale up to minimum height ---
+      // --- Step 2: Scale up to minimum height ---
       // Tesseract works best with characters ~50-70px tall.
       // Target: at least 120px canvas height for reliable single-word OCR.
       const minHeight = 140;
@@ -3579,34 +3556,59 @@
       const dw = Math.round(sw * scale);
       const dh = Math.round(sh * scale);
 
-      // Write binarized+dilated result back to a canvas
-      const binCanvas = document.createElement("canvas");
-      binCanvas.width = sw;
-      binCanvas.height = sh;
-      const binCtx = binCanvas.getContext("2d");
-      const outData = binCtx.createImageData(sw, sh);
+      // Write binarized result back to a canvas
+      let workCanvas = document.createElement("canvas");
+      workCanvas.width = sw;
+      workCanvas.height = sh;
+      const workCtx = workCanvas.getContext("2d");
+      const outData = workCtx.createImageData(sw, sh);
       for (let i = 0; i < sw * sh; i++) {
-        const v = dilated[i];
+        const v = binary[i];
         outData.data[i * 4] = v;
         outData.data[i * 4 + 1] = v;
         outData.data[i * 4 + 2] = v;
         outData.data[i * 4 + 3] = 255;
       }
-      binCtx.putImageData(outData, 0, 0);
+      workCtx.putImageData(outData, 0, 0);
 
-      // Scale up if needed
+      // Scale up if needed (pixelated to keep sharp edges)
       if (scale > 1) {
         const scaledCanvas = document.createElement("canvas");
         scaledCanvas.width = dw;
         scaledCanvas.height = dh;
         const scaledCtx = scaledCanvas.getContext("2d");
-        // Use pixelated rendering to keep sharp edges
         scaledCtx.imageSmoothingEnabled = false;
-        scaledCtx.drawImage(binCanvas, 0, 0, dw, dh);
-        return scaledCanvas;
+        scaledCtx.drawImage(workCanvas, 0, 0, dw, dh);
+        workCanvas = scaledCanvas;
       }
 
-      return binCanvas;
+      // --- Step 3: Dilate (thicken strokes) ---
+      // 3x3 dilation: if any neighbor is ink (0), pixel becomes ink.
+      // Only ONE pass on the upscaled image: two passes fill the counters of
+      // o/d/e/p and make Tesseract reject the word entirely.
+      const w2 = workCanvas.width;
+      const h2 = workCanvas.height;
+      const ctx2 = workCanvas.getContext("2d");
+      const img2 = ctx2.getImageData(0, 0, w2, h2);
+      const px = img2.data;
+      const input = new Uint8Array(px.length);
+      for (let i = 0; i < px.length; i += 4) input[i] = px[i];
+      for (let y = 1; y < h2 - 1; y++) {
+        for (let x = 1; x < w2 - 1; x++) {
+          const idx = (y * w2 + x) * 4;
+          if (input[idx] === 0) continue;
+          let isNearInk = false;
+          for (let dy = -1; dy <= 1 && !isNearInk; dy++) {
+            for (let dx = -1; dx <= 1 && !isNearInk; dx++) {
+              if (input[((y + dy) * w2 + (x + dx)) * 4] === 0) isNearInk = true;
+            }
+          }
+          if (isNearInk) { px[idx] = 0; px[idx + 1] = 0; px[idx + 2] = 0; }
+        }
+      }
+      ctx2.putImageData(img2, 0, 0);
+
+      return workCanvas;
     }
 
     // Normalize text: lowercase, keep only letters (including Polish diacritics)
@@ -3614,16 +3616,70 @@
       return text.trim().toLowerCase().replace(/[^a-ząćęłńóśźż]/g, "");
     }
 
+    // Split the cropped image into separate text lines (row-projection of ink).
+    // Gaps smaller than minGap are merged so a detached dot/period doesn't split a line.
+    function findLineBands(cropCanvas) {
+      const sw = cropCanvas.width, sh = cropCanvas.height;
+      const data = cropCanvas.getContext("2d").getImageData(0, 0, sw, sh).data;
+      const rowInk = new Uint8Array(sh);
+      for (let y = 0; y < sh; y++) {
+        let count = 0;
+        for (let x = 0; x < sw; x++) {
+          const i = (y * sw + x) * 4;
+          if (data[i] < 160 || data[i + 1] < 160 || data[i + 2] < 160) count++;
+        }
+        rowInk[y] = count;
+      }
+      const bands = [];
+      let start = -1;
+      for (let y = 0; y <= sh; y++) {
+        const has = y < sh && rowInk[y] > 0;
+        if (has && start < 0) start = y;
+        if (!has && start >= 0) { bands.push({ top: start, bottom: y - 1 }); start = -1; }
+      }
+      const dprLocal = window.devicePixelRatio || 1;
+      const minGap = Math.max(24 * dprLocal, sh * 0.10);
+      const merged = [];
+      for (const b of bands) {
+        const last = merged[merged.length - 1];
+        if (last && b.top - last.bottom - 1 < minGap) last.bottom = b.bottom;
+        else merged.push({ top: b.top, bottom: b.bottom });
+      }
+      return merged;
+    }
+
     async function recognizeText() {
       if (!worker) return "";
       // Crop to just the drawn region
       const cropped = getCroppedCanvas();
       if (!cropped) return "";
+      // Multi-line writing: OCR each detected line separately (PSM is SINGLE_LINE)
+      const bands = findLineBands(cropped);
+      if (bands.length <= 1) {
       // Apply binarization, dilation, and upscaling
       const processed = preprocessForOCR(cropped);
       const dataUrl = processed.toDataURL("image/png");
       const result = await worker.recognize(dataUrl);
       return normalizeText(result.data.text);
+      }
+      const dprLocal = window.devicePixelRatio || 1;
+      const parts = [];
+      for (const band of bands) {
+        const pad = Math.round(24 * dprLocal);
+        const top = Math.max(0, band.top - pad);
+        const bottom = Math.min(cropped.height - 1, band.bottom + pad);
+        const sub = document.createElement("canvas");
+        sub.width = cropped.width;
+        sub.height = bottom - top + 1;
+        const sc = sub.getContext("2d");
+        sc.fillStyle = "#ffffff";
+        sc.fillRect(0, 0, sub.width, sub.height);
+        sc.drawImage(cropped, 0, top, sub.width, sub.height, 0, 0, sub.width, sub.height);
+        const processed = preprocessForOCR(sub);
+        const result = await worker.recognize(processed.toDataURL("image/png"));
+        parts.push(result.data.text || "");
+      }
+      return normalizeText(parts.join(" "));
     }
 
     // Levenshtein distance for fuzzy matching
