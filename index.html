@@ -3362,10 +3362,31 @@
       };
     }
 
+    // Auto-check: after the user stops writing for a moment, run OCR and
+    // advance automatically if the word is exactly right.
+    let autoCheckTimer = null;
+
+    function cancelAutoCheck() {
+      if (autoCheckTimer) {
+        clearTimeout(autoCheckTimer);
+        autoCheckTimer = null;
+      }
+    }
+
+    function scheduleAutoCheck() {
+      cancelAutoCheck();
+      if (!hasDrawn || isShowingResult || isChecking) return;
+      autoCheckTimer = setTimeout(() => {
+        autoCheckTimer = null;
+        autoCheck();
+      }, 700);
+    }
+
     function startDraw(e) {
       if (isShowingResult) return;
       e.preventDefault();
       isDrawing = true;
+      cancelAutoCheck();
       const pos = getPos(e);
       lastX = pos.x;
       lastY = pos.y;
@@ -3395,6 +3416,7 @@
     function endDraw(e) {
       if (e) e.preventDefault();
       isDrawing = false;
+      scheduleAutoCheck();
     }
 
     // Prevent default touch behavior on canvas to avoid scrolling
@@ -3408,6 +3430,7 @@
     canvas.addEventListener("touchcancel", endDraw, { passive: false });
 
     function clearCanvas() {
+      cancelAutoCheck();
       const rect = canvasWrapper.getBoundingClientRect();
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, rect.width, rect.height);
@@ -3803,34 +3826,62 @@
 
       try {
         const recognized = await recognizeText();
-        const expected = normalizeText(currentVocab.answer);
-        // Fuzzy match: scale tolerance with word length
-        // 1-3 chars: exact match, 4-6 chars: 1 error, 7+ chars: 2 errors
-        const dist = levenshtein(recognized, expected);
-        const threshold = expected.length >= 7 ? 2 : expected.length >= 4 ? 1 : 0;
-        const isCorrect = recognized.length > 0 && dist <= threshold;
-
-        // Show result
-        ocrResult.textContent = recognized || "(nothing)";
-        ocrResult.className = "ocr-text " + (isCorrect ? "" : "wrong-answer");
-        correctAnswer.textContent = currentVocab.answerDisplay;
-
-        resultInfo.className = "result-info visible";
-
-        promptCard.className = "prompt-bar " + (isCorrect ? "result-correct" : "result-wrong");
-
-        // Store result - recording deferred to rating button click
-        lastCheckResult = { vocabId: currentVocab.id, isCorrect };
-
-        // Switch to rating mode
-        bottomActions.style.display = "none";
-        nextActions.style.display = "flex";
-        document.getElementById("btnSkipWord").style.display = "none";
-        isShowingResult = true;
+        showCheckResult(recognized);
       } catch (err) {
         console.error("OCR error:", err);
         btnCheck.innerHTML = "CHECK";
         btnCheck.disabled = false;
+      }
+
+      isChecking = false;
+    }
+
+    function showCheckResult(recognized) {
+      const expected = normalizeText(currentVocab.answer);
+      // Fuzzy match: scale tolerance with word length
+      // 1-3 chars: exact match, 4-6 chars: 1 error, 7+ chars: 2 errors
+      const dist = levenshtein(recognized, expected);
+      const threshold = expected.length >= 7 ? 2 : expected.length >= 4 ? 1 : 0;
+      const isCorrect = recognized.length > 0 && dist <= threshold;
+
+      // Show result
+      ocrResult.textContent = recognized || "(nothing)";
+      ocrResult.className = "ocr-text " + (isCorrect ? "" : "wrong-answer");
+      correctAnswer.textContent = currentVocab.answerDisplay;
+
+      resultInfo.className = "result-info visible";
+
+      promptCard.className = "prompt-bar " + (isCorrect ? "result-correct" : "result-wrong");
+
+      // Store result - recording deferred to rating button click
+      lastCheckResult = { vocabId: currentVocab.id, isCorrect };
+
+      // Switch to rating mode
+      bottomActions.style.display = "none";
+      nextActions.style.display = "flex";
+      document.getElementById("btnSkipWord").style.display = "none";
+      isShowingResult = true;
+    }
+
+    // Quiet auto-check after the pen lifts: only advances on an exact match,
+    // wrong results stay silent so the user can keep writing or press CHECK.
+    // Deliberately does NOT touch the CHECK button (no spinner flash); the
+    // isChecking guard alone prevents a concurrent manual check.
+    async function autoCheck() {
+      if (isChecking || isShowingResult || !hasDrawn) return;
+      isChecking = true;
+
+      try {
+        const recognized = await recognizeText();
+        // User may have cleared the canvas while OCR was running
+        if (hasDrawn && !isShowingResult) {
+          const expected = normalizeText(currentVocab.answer);
+          if (recognized.length > 0 && levenshtein(recognized, expected) === 0) {
+            showCheckResult(recognized);
+          }
+        }
+      } catch (err) {
+        console.error("Auto OCR error:", err);
       }
 
       isChecking = false;
