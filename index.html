@@ -311,20 +311,31 @@
     }
 
     /* ---- Result info (shown below prompt bar after check) ---- */
+    /* All sizes inside .result-info are em-based, so they scale with its font-size */
     .result-info {
       display: none;
       background: var(--surface);
-      border-radius: 10px;
-      padding: 8px 12px;
+      border-radius: 0.3em;
+      padding: 0.4em 0.5em;
       flex-shrink: 0;
-      font-size: 13px;
+      font-size: 2em;
+      line-height: 1.5;
+      white-space: normal;
+      overflow-wrap: break-word;
+      word-break: break-word;
       box-shadow: var(--shadow);
     }
 
     .result-info.visible {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 0.25em;
+    }
+
+    .result-info > span {
+      white-space: normal;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
 
     .result-info .label {
@@ -334,12 +345,18 @@
 
     .result-info .ocr-text {
       font-weight: 600;
+      white-space: normal;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
 
     .result-info .correct-answer {
       font-weight: 700;
-      font-size: 22px;
+      font-size: 1.5em;
       color: var(--success);
+      white-space: normal;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
 
     .result-info .wrong-answer {
@@ -1723,11 +1740,10 @@
         font-size: 7px;
       }
 
-      /* Result info: compact */
+      /* Result info: compact but always fully visible, wraps to multiple lines.
+         Inner sizes are em-based, so only the base font-size needs adjusting. */
       .result-info {
-        font-size: 11px;
-        padding: 2px 10px;
-        border-radius: 8px;
+        font-size: 1em;
       }
 
       /* Drawing area takes all remaining height */
