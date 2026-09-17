@@ -2285,6 +2285,42 @@
     function getBatchKey()   { return 'anki_scribe_batch_' + activeFileSlug; }
     function getBatchSizeKey() { return 'anki_scribe_batch_size_' + activeFileSlug; }
 
+    // Slug-scoped readers/writers (independent of the active file) for backup export/import
+    function readStatsFor(slug) {
+      try {
+        const raw = localStorage.getItem('anki_scribe_stats_' + slug);
+        return raw ? JSON.parse(raw) : {};
+      } catch {
+        return {};
+      }
+    }
+
+    function writeStatsFor(slug, stats) {
+      localStorage.setItem('anki_scribe_stats_' + slug, JSON.stringify(stats));
+    }
+
+    function readBatchFor(slug) {
+      try {
+        const raw = localStorage.getItem('anki_scribe_batch_' + slug);
+        return raw ? JSON.parse(raw) : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function writeBatchFor(slug, batchIds) {
+      localStorage.setItem('anki_scribe_batch_' + slug, JSON.stringify(batchIds));
+    }
+
+    function readBatchSizeFor(slug) {
+      const v = parseInt(localStorage.getItem('anki_scribe_batch_size_' + slug));
+      return (v && v > 0) ? v : null;
+    }
+
+    function writeBatchSizeFor(slug, size) {
+      localStorage.setItem('anki_scribe_batch_size_' + slug, String(size));
+    }
+
     // Rating intervals in milliseconds
     const RATING_INTERVALS = {
       again: 1 * 60 * 1000,         // 1 minute
@@ -2335,16 +2371,32 @@
       localStorage.removeItem(getStorageKey());
     }
 
-    // Export all learning data as a JSON file download
-    function exportStats() {
+    // Export all learning data as a JSON file download (version 3: per-file stats,
+    // vocab file contents, and achievements)
+    async function exportStats() {
+      const files = [];
+      for (const f of getFileRegistry()) {
+        let text = '';
+        try {
+          const record = await loadVocabFile(f.slug);
+          if (record && typeof record.text === 'string') text = record.text;
+        } catch (e) {}
+        files.push({
+          slug: f.slug,
+          name: f.name,
+          text: text,
+          stats: readStatsFor(f.slug),
+          batch: readBatchFor(f.slug) || [],
+          batchSize: readBatchSizeFor(f.slug) || DEFAULT_BATCH_SIZE
+        });
+      }
       const data = {
-        version: 2,
+        version: 3,
         exportedAt: new Date().toISOString(),
+        appVersion: APP_VERSION,
         activeFile: activeFileSlug,
-        files: getFileRegistry(),
-        stats: loadStats(),
-        batch: loadBatch(),
-        batchSize: getBatchSize()
+        files: files,
+        achievements: loadAchievements()
       };
       const json = JSON.stringify(data, null, 2);
       const blob = new Blob([json], { type: "application/json" });
@@ -2359,53 +2411,139 @@
       URL.revokeObjectURL(url);
     }
 
-    // Import learning data from a JSON file
-    // mode: "replace" overwrites everything, "merge" keeps the better stats per word
+    // Import learning data from a JSON file (version 3, with version 2 fallback)
+    // mode: "replace" overwrites each backup file's data, "merge" keeps the better stats per word
     function importStats(file, mode) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (e) => {
-          try {
-            const data = JSON.parse(e.target.result);
-            // Validate structure
-            if (!data || typeof data.stats !== "object") {
-              reject("Invalid backup file: missing stats data.");
-              return;
-            }
+          (async () => {
+            try {
+              const data = JSON.parse(e.target.result);
+              if (!data || typeof data !== "object") {
+                reject("Invalid backup file: not a JSON object.");
+                return;
+              }
 
-            if (mode === "replace") {
-              // Full replace: overwrite stats, batch, and batch size
-              saveStats(data.stats);
-              if (data.batch && Array.isArray(data.batch)) {
-                saveBatch(data.batch);
+              let entries;
+              if (data.version === 3 && Array.isArray(data.files)) {
+                entries = data.files
+                  .filter(f => f && typeof f.slug === "string")
+                  .map(f => ({
+                    slug: f.slug,
+                    name: typeof f.name === "string" ? f.name : f.slug,
+                    text: typeof f.text === "string" ? f.text : null,
+                    stats: (f.stats && typeof f.stats === "object") ? f.stats : {},
+                    batch: Array.isArray(f.batch) ? f.batch : null,
+                    batchSize: (typeof f.batchSize === "number" && f.batchSize > 0) ? f.batchSize : null
+                  }));
+              } else if ((data.version === 2 || !data.version) && data.stats && typeof data.stats === "object") {
+                const slug = (typeof data.activeFile === "string" && data.activeFile) ? data.activeFile : activeFileSlug;
+                const regName = Array.isArray(data.files)
+                  ? ((data.files.find(f => f && f.slug === slug) || {}).name || null)
+                  : null;
+                entries = [{
+                  slug: slug,
+                  name: regName || slug,
+                  text: null,
+                  stats: data.stats,
+                  batch: Array.isArray(data.batch) ? data.batch : null,
+                  batchSize: (typeof data.batchSize === "number" && data.batchSize > 0) ? data.batchSize : null
+                }];
+              } else {
+                reject("Invalid backup file: unsupported version or missing stats data.");
+                return;
               }
-              if (data.batchSize && typeof data.batchSize === "number") {
-                setBatchSize(data.batchSize);
+
+              if (entries.length === 0) {
+                reject("Invalid backup file: no files found.");
+                return;
               }
-            } else {
-              // Merge: for each word, keep whichever has more attempts.
-              const current = loadStats();
-              const incoming = data.stats;
-              for (const id of Object.keys(incoming)) {
-                const inc = incoming[id];
-                const cur = current[id];
-                if (!cur || (inc.attempts || 0) > (cur.attempts || 0)) {
-                  current[id] = inc;
+
+              let wordStatsTotal = 0;
+              for (const entry of entries) {
+                const incoming = entry.stats;
+                wordStatsTotal += Object.keys(incoming).length;
+
+                if (mode === "replace") {
+                  writeStatsFor(entry.slug, incoming);
+                  if (entry.batch) writeBatchFor(entry.slug, entry.batch);
+                  if (entry.batchSize) writeBatchSizeFor(entry.slug, entry.batchSize);
+                  if (entry.text !== null) {
+                    await storeVocabFile(entry.slug, entry.name, entry.text);
+                  } else {
+                    registerFile(entry.slug, entry.name);
+                  }
+                } else {
+                  const current = readStatsFor(entry.slug);
+                  for (const id of Object.keys(incoming)) {
+                    const inc = incoming[id];
+                    const cur = current[id];
+                    if (!cur || (inc.attempts || 0) > (cur.attempts || 0)) {
+                      current[id] = inc;
+                    }
+                  }
+                  writeStatsFor(entry.slug, current);
+                  if (entry.batch && !readBatchFor(entry.slug)) writeBatchFor(entry.slug, entry.batch);
+                  if (entry.batchSize && readBatchSizeFor(entry.slug) === null) writeBatchSizeFor(entry.slug, entry.batchSize);
+                  const exists = getFileRegistry().some(f => f.slug === entry.slug);
+                  if (!exists) {
+                    if (entry.text !== null) {
+                      await storeVocabFile(entry.slug, entry.name, entry.text);
+                    } else {
+                      registerFile(entry.slug, entry.name);
+                    }
+                  }
                 }
               }
-              saveStats(current);
+
+              const incomingAch = (data.achievements && typeof data.achievements === "object") ? data.achievements : null;
+              if (incomingAch) {
+                if (mode === "replace") {
+                  saveAchievements({
+                    unlocked: (incomingAch.unlocked && typeof incomingAch.unlocked === "object") ? incomingAch.unlocked : {},
+                    batchCompletions: typeof incomingAch.batchCompletions === "number" ? incomingAch.batchCompletions : 0,
+                    fileCompletions: typeof incomingAch.fileCompletions === "number" ? incomingAch.fileCompletions : 0,
+                    completedFiles: Array.isArray(incomingAch.completedFiles) ? incomingAch.completedFiles : []
+                  });
+                } else {
+                  const cur = loadAchievements();
+                  const unlocked = Object.assign({}, cur.unlocked);
+                  for (const [id, info] of Object.entries(incomingAch.unlocked || {})) {
+                    if (!unlocked[id] || (info && typeof info.unlockedAt === "number" && unlocked[id].unlockedAt > info.unlockedAt)) {
+                      unlocked[id] = info;
+                    }
+                  }
+                  saveAchievements({
+                    unlocked: unlocked,
+                    batchCompletions: Math.max(cur.batchCompletions || 0, incomingAch.batchCompletions || 0),
+                    fileCompletions: Math.max(cur.fileCompletions || 0, incomingAch.fileCompletions || 0),
+                    completedFiles: [...new Set([...(cur.completedFiles || []), ...(incomingAch.completedFiles || [])])]
+                  });
+                }
+              }
+
+              let switched = false;
+              if (typeof data.activeFile === "string" && data.activeFile) {
+                const inRegistry = getFileRegistry().some(f => f.slug === data.activeFile);
+                if (inRegistry && data.activeFile !== activeFileSlug) {
+                  switched = await switchVocabFile(data.activeFile);
+                } else if (inRegistry) {
+                  setActiveFileSlug(data.activeFile);
+                }
+              }
+
+              if (!switched) {
+                resolveBatch();
+                updateBatchIndicator();
+                updateProgressRing();
+              }
+
+              resolve({ files: entries.length, words: wordStatsTotal });
+            } catch (err) {
+              reject("Failed to parse backup file: " + err.message);
             }
-
-            // Refresh batch and UI
-            resolveBatch();
-            updateBatchIndicator();
-            updateProgressRing();
-
-            const wordCount = Object.keys(data.stats).length;
-            resolve(wordCount);
-          } catch (err) {
-            reject("Failed to parse backup file: " + err.message);
-          }
+          })();
         };
         reader.onerror = () => reject("Failed to read file.");
         reader.readAsText(file);
@@ -3900,8 +4038,8 @@
       });
 
       // Export stats handler
-      document.getElementById("btnExportStats").addEventListener("click", () => {
-        exportStats();
+      document.getElementById("btnExportStats").addEventListener("click", async () => {
+        await exportStats();
       });
 
       // Import stats handler
@@ -3919,15 +4057,15 @@
         // Ask whether to merge or replace
         const doReplace = confirm(
           "Import mode:\n\n" +
-          "OK = Replace all stats with backup\n" +
-          "Cancel = Merge (keep best stats per word)"
+          "OK = Replace file data with backup\n" +
+          "Cancel = Merge (per word, most attempts wins)"
         );
         const mode = doReplace ? "replace" : "merge";
 
         try {
-          const wordCount = await importStats(file, mode);
+          const result = await importStats(file, mode);
           importStatus.className = "import-status success";
-          importStatus.textContent = `Imported ${wordCount} word stats (${mode} mode). Refreshing...`;
+          importStatus.textContent = `Imported ${result.files} files, ${result.words} word stats (${mode} mode). Refreshing...`;
           // Refresh the stats modal after a short delay
           setTimeout(() => {
             renderStats();
