@@ -1000,6 +1000,14 @@
       margin-top: 2px;
     }
 
+    .version-more {
+      display: none;
+    }
+
+    .version-more.open {
+      display: block;
+    }
+
     /* ---- Progress Ring (prompt bar) ---- */
     .progress-ring-container {
       position: relative;
@@ -2017,9 +2025,6 @@
     <div class="modal" style="border-radius:20px; max-width:400px;">
       <div class="modal-header">
         <h2 id="changelogTitle">What's New</h2>
-        <button class="modal-close" id="changelogClose" type="button">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
       </div>
       <div class="modal-body" style="padding:20px 24px 28px;">
         <ul id="changelogList" style="margin:0 0 20px; padding-left:20px; color:var(--text-secondary); font-size:14px; line-height:1.6;"></ul>
@@ -2052,7 +2057,8 @@
       'daily_routine_words.txt',
       'days_and_months.txt',
       'frequency_adverbs.txt',
-      'numbers_extended.txt'
+      'numbers_extended.txt',
+      'adjectives_p31-32.txt'
     ];
     const FILES_REGISTRY_KEY = 'anki_scribe_files';      // JSON array of {slug, name}
     const ACTIVE_FILE_KEY = 'anki_scribe_active_file';    // slug of last-used file
@@ -2883,10 +2889,13 @@
     // ---- Changelog / "What's New" dialog ----
     // Bump APP_VERSION whenever a new entry is added; the dialog is then shown
     // exactly once after the new version has been installed and opened.
-    const APP_VERSION = '1.6.0';
+    const APP_VERSION = '1.7.0';
     const APP_RELEASE_DATE = '2026-09-17';
     const CHANGELOG_KEY = 'anki_scribe_seen_version';
     const CHANGELOG = {
+      '1.7.0': [
+        'Added: "adjectives_p31-32" — topic: Adjectives from page 31,32.'
+      ],
       '1.6.0': [
         'fix: lession complete dialog, import/export function'
       ],
@@ -2929,7 +2938,6 @@
     }
 
     const changelogOverlay = document.getElementById('changelogOverlay');
-    const changelogClose = document.getElementById('changelogClose');
     const changelogOk = document.getElementById('changelogOk');
     const changelogList = document.getElementById('changelogList');
 
@@ -2963,7 +2971,6 @@
       changelogOverlay.classList.add('open');
     }
 
-    changelogClose.addEventListener('click', closeChangelog);
     changelogOk.addEventListener('click', closeChangelog);
     changelogOverlay.addEventListener('click', (e) => {
       if (e.target === changelogOverlay) closeChangelog();
@@ -3885,8 +3892,8 @@
         }
       });
 
-      // Version history (from CHANGELOG), newest first
-      const versionHistoryHtml = Object.keys(CHANGELOG)
+      // Version history (from CHANGELOG), newest first — show last 5, rest collapsible
+      const sortedVersions = Object.keys(CHANGELOG)
         .sort((a, b) => {
           const pa = a.split('.').map(Number);
           const pb = b.split('.').map(Number);
@@ -3895,14 +3902,25 @@
             if (d !== 0) return d;
           }
           return 0;
-        })
-        .map(v => `
+        });
+      const versionEntryHtml = (v) => `
             <div class="version-entry">
               <span class="version-tag">v${v}${v === APP_VERSION ? '<span class="version-current">current</span>' : ''}</span>
               <ul>${CHANGELOG[v].map(t => `<li>${t}</li>`).join('')}</ul>
             </div>
-          `)
-        .join('');
+          `;
+      let versionHistoryHtml = sortedVersions.slice(0, 5).map(versionEntryHtml).join('');
+      const olderVersions = sortedVersions.slice(5);
+      if (olderVersions.length > 0) {
+        versionHistoryHtml += `
+            <div class="batch-toggle" id="versionToggle">
+              <span>Show ${olderVersions.length} older version${olderVersions.length > 1 ? 's' : ''}</span>
+              <svg class="toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="version-more" id="versionMoreList">
+              ${olderVersions.map(versionEntryHtml).join('')}
+            </div>`;
+      }
 
       let html = `
         <div class="progress-overview">
@@ -4047,6 +4065,16 @@
         toggle.classList.toggle("open");
         list.classList.toggle("open");
       });
+
+      // Version history older-entries toggle
+      const versionToggle = document.getElementById("versionToggle");
+      if (versionToggle) {
+        versionToggle.addEventListener("click", () => {
+          const list = document.getElementById("versionMoreList");
+          versionToggle.classList.toggle("open");
+          list.classList.toggle("open");
+        });
+      }
 
       document.getElementById("btnClearStats").addEventListener("click", () => {
         if (confirm("Are you sure you want to reset all statistics?")) {

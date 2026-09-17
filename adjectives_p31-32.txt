@@ -1,0 +1,34 @@
+#separator:semicolon
+#html:true
+diligent (masculine);pracowity
+lazy (masculine);leniwy
+fat (masculine);gruby
+slim (masculine);szczupły
+tall (masculine);wysoki
+short (masculine);niski
+medium-height;średniego wzrostu
+cheerful (feminine);wesoła
+sad (feminine);smutna
+handsome (masculine);przystojny
+pretty (feminine);ładna
+ugly (feminine);brzydka
+tired (masculine);zmęczony
+athletic (masculine);wysportowany
+old (masculine);stary
+young (masculine);młody
+healthy (feminine);zdrowa
+sick (feminine);chora
+clean (feminine);czysta
+dirty (feminine);brudna
+aggressive (masculine);agresywny
+active (masculine);aktywny
+ambitious (masculine);ambitny
+attractive (masculine);atrakcyjny
+energetic (masculine);energiczny
+intelligent (masculine);inteligentny
+romantic (masculine);romantyczny
+frustrated (masculine);sfrustrowany
+spontaneous (masculine);spontaniczny
+talented (masculine);utalentowany
+stressed (masculine);zestresowany
+creative (masculine);kreatywny
