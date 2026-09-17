@@ -817,6 +817,21 @@
       border-color: var(--primary);
     }
 
+    .setting-row input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--primary);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .setting-hint {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: -2px;
+      line-height: 1.4;
+    }
+
     .btn-skip-batch {
       width: 100%;
       height: 44px;
@@ -2905,10 +2920,13 @@
     // ---- Changelog / "What's New" dialog ----
     // Bump APP_VERSION whenever a new entry is added; the dialog is then shown
     // exactly once after the new version has been installed and opened.
-    const APP_VERSION = '1.8.0';
+    const APP_VERSION = '1.8.1';
     const APP_RELEASE_DATE = '2026-09-17';
     const CHANGELOG_KEY = 'anki_scribe_seen_version';
     const CHANGELOG = {
+      '1.8.1': [
+        'add auto-OCR toggle'
+      ],
       '1.8.0': [
         'Improve OCR'
       ],
@@ -3366,6 +3384,23 @@
     // advance automatically if the word is exactly right.
     let autoCheckTimer = null;
 
+    // Auto-recognize setting (persisted; default: enabled)
+    const AUTO_RECOGNIZE_KEY = "anki_scribe_auto_recognize";
+
+    function isAutoRecognizeEnabled() {
+      try {
+        return localStorage.getItem(AUTO_RECOGNIZE_KEY) !== "0";
+      } catch (e) {
+        return true;
+      }
+    }
+
+    function setAutoRecognizeEnabled(enabled) {
+      try {
+        localStorage.setItem(AUTO_RECOGNIZE_KEY, enabled ? "1" : "0");
+      } catch (e) {}
+    }
+
     function cancelAutoCheck() {
       if (autoCheckTimer) {
         clearTimeout(autoCheckTimer);
@@ -3375,7 +3410,7 @@
 
     function scheduleAutoCheck() {
       cancelAutoCheck();
-      if (!hasDrawn || isShowingResult || isChecking) return;
+      if (!isAutoRecognizeEnabled() || !hasDrawn || isShowingResult || isChecking) return;
       autoCheckTimer = setTimeout(() => {
         autoCheckTimer = null;
         autoCheck();
@@ -4054,6 +4089,15 @@
         ${renderAchievementsSection()}
 
         <div class="settings-section">
+          <h3>Recognition</h3>
+          <div class="setting-row">
+            <label for="autoRecognizeToggle">Auto-recognize</label>
+            <input type="checkbox" id="autoRecognizeToggle">
+          </div>
+          <p class="setting-hint">Checks the word automatically after you stop writing. A correct word goes straight to the rating buttons.</p>
+        </div>
+
+        <div class="settings-section">
           <h3>Batch Settings</h3>
           <div class="setting-row">
             <label for="batchSizeInput">Words per batch</label>
@@ -4165,6 +4209,13 @@
       document.getElementById("batchSizeInput").addEventListener("change", (e) => {
         const newSize = setBatchSize(parseInt(e.target.value) || DEFAULT_BATCH_SIZE);
         e.target.value = newSize;
+      });
+
+      // Auto-recognize toggle
+      const autoRecognizeToggle = document.getElementById("autoRecognizeToggle");
+      autoRecognizeToggle.checked = isAutoRecognizeEnabled();
+      autoRecognizeToggle.addEventListener("change", () => {
+        setAutoRecognizeEnabled(autoRecognizeToggle.checked);
       });
 
       // Skip batch button handler
