@@ -1998,9 +1998,6 @@
     <div class="modal" style="border-radius:20px; max-width:400px;">
       <div class="modal-header">
         <h2 id="fileCompleteTitle">Lesson Complete!</h2>
-        <button class="modal-close" id="fileCompleteClose" type="button">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
       </div>
       <div class="modal-body" style="text-align:center; padding:20px 24px 28px;">
         <p id="fileCompleteMsg" style="margin:0 0 20px; color:var(--text-secondary); font-size:14px; line-height:1.5;">
@@ -2009,6 +2006,7 @@
         <div id="fileCompleteActions" style="display:flex; gap:10px; justify-content:center;">
           <button id="fileCompleteStay" type="button" class="btn" style="background:var(--surface-alt); color:var(--text); padding:10px 20px; border-radius:12px; font-size:14px; font-weight:600; border:1px solid var(--border); cursor:pointer;">Stay Here</button>
           <button id="fileCompleteSwitch" type="button" class="btn" style="background:var(--primary); color:#fff; padding:10px 20px; border-radius:12px; font-size:14px; font-weight:600; border:none; cursor:pointer;">Next File</button>
+          <button id="fileCompleteReset" type="button" class="btn" style="background:var(--danger); color:#fff; padding:10px 20px; border-radius:12px; font-size:14px; font-weight:600; border:none; cursor:pointer;">Reset Lesson</button>
         </div>
       </div>
     </div>
@@ -2806,7 +2804,6 @@
 
     // ---- File Complete dialog ----
     const fileCompleteOverlay = document.getElementById('fileCompleteOverlay');
-    const fileCompleteClose = document.getElementById('fileCompleteClose');
     const fileCompleteStay = document.getElementById('fileCompleteStay');
     const fileCompleteSwitch = document.getElementById('fileCompleteSwitch');
     const fileCompleteMsg = document.getElementById('fileCompleteMsg');
@@ -2852,7 +2849,20 @@
       _nextFileSwitchSlug = null;
     }
 
-    fileCompleteClose.addEventListener('click', closeFileCompleteDialog);
+    // Reset the active lesson: wipe its stats and batch so it can be done anew.
+    // Achievements are kept — they are permanent milestones.
+    function resetCurrentLesson() {
+      localStorage.removeItem(getStorageKey());
+      localStorage.removeItem(getBatchKey());
+      lastCheckResult = null;
+      generateNewBatch();
+      resolveBatch();
+      updateBatchIndicator();
+      updateProgressRing();
+      const vocab = pickNextVocab();
+      showVocab(vocab);
+    }
+
     fileCompleteStay.addEventListener('click', closeFileCompleteDialog);
     fileCompleteSwitch.addEventListener('click', async () => {
       const slug = _nextFileSwitchSlug;
@@ -2861,6 +2871,11 @@
         await switchVocabFile(slug);
       }
     });
+    document.getElementById('fileCompleteReset').addEventListener('click', () => {
+      if (!confirm('Reset all progress for this lesson? This cannot be undone.')) return;
+      closeFileCompleteDialog();
+      resetCurrentLesson();
+    });
     fileCompleteOverlay.addEventListener('click', (e) => {
       if (e.target === fileCompleteOverlay) closeFileCompleteDialog();
     });
@@ -2868,10 +2883,13 @@
     // ---- Changelog / "What's New" dialog ----
     // Bump APP_VERSION whenever a new entry is added; the dialog is then shown
     // exactly once after the new version has been installed and opened.
-    const APP_VERSION = '1.5.1';
+    const APP_VERSION = '1.6.0';
     const APP_RELEASE_DATE = '2026-09-17';
     const CHANGELOG_KEY = 'anki_scribe_seen_version';
     const CHANGELOG = {
+      '1.6.0': [
+        'fix: lession complete dialog, import/export function'
+      ],
       '1.5.1': [
         'fixed: all show vocabulary in menu'
       ],
