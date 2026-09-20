@@ -1940,21 +1940,22 @@
 
     <!-- Rating buttons (shown after checking) -->
     <div class="bottom-actions rating-actions" id="nextActions" style="display:none;">
+      <!-- rating-time spans are rewritten per word by updateRatingPreviews() -->
       <button class="btn btn-rating btn-again" data-rating="again">
         <span class="rating-label">Again</span>
-        <span class="rating-time">&lt;1min</span>
+        <span class="rating-time">1m</span>
       </button>
       <button class="btn btn-rating btn-hard" data-rating="hard">
         <span class="rating-label">Hard</span>
-        <span class="rating-time">&lt;6min</span>
+        <span class="rating-time">10m</span>
       </button>
       <button class="btn btn-rating btn-good" data-rating="good">
         <span class="rating-label">Good</span>
-        <span class="rating-time">&lt;10min</span>
+        <span class="rating-time">10m</span>
       </button>
       <button class="btn btn-rating btn-easy" data-rating="easy">
         <span class="rating-label">Easy</span>
-        <span class="rating-time">3 days</span>
+        <span class="rating-time">4d</span>
       </button>
     </div>
   </main>
@@ -2356,13 +2357,58 @@
       localStorage.setItem('anki_scribe_batch_size_' + slug, String(size));
     }
 
-    // Rating intervals in milliseconds
-    const RATING_INTERVALS = {
-      again: 1 * 60 * 1000,         // 1 minute
-      hard:  6 * 60 * 1000,         // 6 minutes
-      good:  10 * 60 * 1000,        // 10 minutes
-      easy:  3 * 24 * 60 * 60 * 1000 // 3 days
-    };
+    // =========================================================================
+    // SPACED REPETITION (SuperMemo-2)
+    // =========================================================================
+    // Each word carries an ease factor (starts at 2.5, floor 1.3) and an
+    // interval in ms. On success the interval grows (x ease), on "again" it
+    // resets to the 1-minute learning step. New-card ladder: 1 min -> 10 min
+    // -> 1 day (graduation); "easy" graduates immediately with a bonus.
+    const SM2_INITIAL_EASE = 2.5;
+    const SM2_MIN_EASE = 1.3;
+    const SM2_QUALITY = { again: 1, hard: 3, good: 4, easy: 5 };
+    const MINUTE_MS = 60 * 1000;
+    const DAY_MS = 24 * 60 * MINUTE_MS;
+
+    // SM-2 ease update: EF' = EF + (0.1 - (5-q) * (0.08 + (5-q) * 0.02))
+    function sm2NextEase(ease, rating) {
+      const q = SM2_QUALITY[rating];
+      const delta = 0.1 - (5 - q) * (0.08 + (5 - q) * 0.02);
+      return Math.max(SM2_MIN_EASE, ease + delta);
+    }
+
+    // Next interval in ms for the given rating (interval 0 = never reviewed)
+    function sm2NextInterval(interval, ease, rating) {
+      switch (rating) {
+        case 'again':
+          return MINUTE_MS; // lapse: back to the learning step
+        case 'hard':
+          return interval > 0 ? Math.max(10 * MINUTE_MS, interval * 1.2) : 10 * MINUTE_MS;
+        case 'good':
+          if (interval === 0 || interval < 10 * MINUTE_MS) return 10 * MINUTE_MS;
+          if (interval < DAY_MS) return DAY_MS; // graduate to the review queue
+          return interval * ease;
+        case 'easy':
+          if (interval < DAY_MS) return 4 * DAY_MS; // graduate with easy bonus
+          return interval * ease * 1.3;
+      }
+    }
+
+    // Human-readable label for an interval in ms (e.g. "10m", "2.5d", "3w")
+    function formatDuration(ms) {
+      const min = Math.round(ms / MINUTE_MS);
+      if (min < 60) return min + 'm';
+      const h = min / 60;
+      if (h < 24) return (Number.isInteger(h) ? h : h.toFixed(1)) + 'h';
+      const d = h / 24;
+      if (d < 14) return (Number.isInteger(d) ? d : parseFloat(d.toFixed(1))) + 'd';
+      if (d < 60) {
+        const w = d / 7;
+        return (Number.isInteger(w) ? w : parseFloat(w.toFixed(1))) + 'w';
+      }
+      const mo = d / 30.44;
+      return (mo >= 10 ? Math.round(mo) : parseFloat(mo.toFixed(1))) + 'mo';
+    }
 
     function loadStats() {
       try {
@@ -2383,6 +2429,10 @@
         stats[vocabId] = { attempts: 0, correct: 0, wrong: 0, again: 0, hard: 0, good: 0, easy: 0, history: [] };
       }
       const s = stats[vocabId];
+      // Backfill SM-2 fields for stats saved by older app versions
+      if (typeof s.ease !== 'number') s.ease = SM2_INITIAL_EASE;
+      if (typeof s.interval !== 'number') s.interval = 0;
+
       s.attempts++;
       // Maintain backward compat: again/hard = wrong, good/easy = correct
       if (rating === "again" || rating === "hard") {
@@ -2392,8 +2442,10 @@
       }
       // Track individual rating counts
       s[rating] = (s[rating] || 0) + 1;
-      // Store due time based on rating interval
-      s.dueAt = Date.now() + RATING_INTERVALS[rating];
+      // SM-2: update ease, then compute the next interval and due time
+      s.ease = sm2NextEase(s.ease, rating);
+      s.interval = sm2NextInterval(s.interval, s.ease, rating);
+      s.dueAt = Date.now() + s.interval;
       s.history.push({
         timestamp: Date.now(),
         correct: rating === "good" || rating === "easy",
@@ -2920,10 +2972,13 @@
     // ---- Changelog / "What's New" dialog ----
     // Bump APP_VERSION whenever a new entry is added; the dialog is then shown
     // exactly once after the new version has been installed and opened.
-    const APP_VERSION = '1.8.1';
-    const APP_RELEASE_DATE = '2026-09-17';
+    const APP_VERSION = '1.9.0';
+    const APP_RELEASE_DATE = '2026-09-20';
     const CHANGELOG_KEY = 'anki_scribe_seen_version';
     const CHANGELOG = {
+      '1.9.0': [
+        'Fix anki SM-2 learn algorithm'
+      ],
       '1.8.1': [
         'add auto-OCR toggle'
       ],
@@ -3778,38 +3833,61 @@
     const bottomActions = document.getElementById("bottomActions");
     const nextActions = document.getElementById("nextActions");
 
+    // Anki-style strict queue (no weighted random):
+    // 1. most-overdue card of the ENTIRE file (global reviews from all batches)
+    // 2. unseen words of the current batch (the "new words" queue)
+    // 3. soonest-due card overall, so studying can continue when nothing is due
     function pickNextVocab() {
-      const pool = currentBatch.length > 0 ? currentBatch : VOCABULARY;
       const stats = loadStats();
       const now = Date.now();
-      // Weight selection: prioritize due items, less practiced, and more wrong answers
-      const weighted = pool.map(v => {
-        const s = stats[v.id];
-        if (!s) return { vocab: v, weight: 10 }; // Never seen = high priority
-        const wrongRate = s.attempts > 0 ? s.wrong / s.attempts : 0;
-        // If dueAt exists, use it for scheduling; items past due get higher weight
-        const overdue = s.dueAt ? Math.max(0, (now - s.dueAt) / (1000 * 60)) : 10; // minutes overdue
-        const notYetDue = s.dueAt && s.dueAt > now;
-        // Higher weight = more likely to be picked
-        let weight;
-        if (notYetDue) {
-          weight = 0.1; // Very low weight for items not yet due
-        } else {
-          weight = Math.max(1, (wrongRate * 5) + Math.min(overdue / 10, 10) - (s.correct * 0.5));
-        }
-        return { vocab: v, weight };
-      });
+      const notCurrent = v => !currentVocab || v.id !== currentVocab.id;
 
-      // Don't repeat the same word
-      const candidates = weighted.filter(w => !currentVocab || w.vocab.id !== currentVocab.id);
-      // Weighted random selection
-      const totalWeight = candidates.reduce((sum, c) => sum + c.weight, 0);
-      let rand = Math.random() * totalWeight;
-      for (const c of candidates) {
-        rand -= c.weight;
-        if (rand <= 0) return c.vocab;
+      // 1. Global reviews: any studied word whose due time has passed,
+      //    most overdue first
+      let dueCard = null;
+      for (const v of VOCABULARY) {
+        const s = stats[v.id];
+        if (!s || !s.dueAt || s.dueAt > now || !notCurrent(v)) continue;
+        if (!dueCard || s.dueAt < stats[dueCard.id].dueAt) dueCard = v;
       }
-      return candidates[candidates.length - 1].vocab;
+      if (dueCard) return dueCard;
+
+      // 2. New words from the current batch
+      const unseen = currentBatch.filter(v => !stats[v.id] && notCurrent(v));
+      if (unseen.length > 0) {
+        return unseen[Math.floor(Math.random() * unseen.length)];
+      }
+
+      // 3. Nothing due and no new batch words left: show the card that
+      //    becomes due soonest (smallest schedule violation)
+      let soonest = null;
+      for (const v of VOCABULARY) {
+        const s = stats[v.id];
+        if (!s || !s.dueAt || s.dueAt <= now || !notCurrent(v)) continue;
+        if (!soonest || s.dueAt < stats[soonest.id].dueAt) soonest = v;
+      }
+      if (soonest) return soonest;
+
+      // 4. Absolute fallback: any unseen word, else a random one
+      const anyUnseen = VOCABULARY.filter(v => !stats[v.id] && notCurrent(v));
+      if (anyUnseen.length > 0) {
+        return anyUnseen[Math.floor(Math.random() * anyUnseen.length)];
+      }
+      return VOCABULARY[Math.floor(Math.random() * VOCABULARY.length)];
+    }
+
+    // Refresh the rating buttons' time labels to match what SM-2 would
+    // actually schedule for the current word (intervals are dynamic now)
+    function updateRatingPreviews() {
+      if (!currentVocab) return;
+      const s = loadStats()[currentVocab.id];
+      const ease = s && typeof s.ease === 'number' ? s.ease : SM2_INITIAL_EASE;
+      const interval = s && typeof s.interval === 'number' ? s.interval : 0;
+      nextActions.querySelectorAll('.btn-rating').forEach(btn => {
+        // Same order as recordAttempt: ease is updated before the interval
+        const span = btn.querySelector('.rating-time');
+        if (span) span.textContent = formatDuration(sm2NextInterval(interval, sm2NextEase(ease, btn.dataset.rating), btn.dataset.rating));
+      });
     }
 
     let hasUserGesture = false;
@@ -3896,6 +3974,7 @@
       nextActions.style.display = "flex";
       document.getElementById("btnSkipWord").style.display = "none";
       isShowingResult = true;
+      updateRatingPreviews();
     }
 
     // Quiet auto-check after the pen lifts: only advances on an exact match,
@@ -3937,6 +4016,7 @@
       nextActions.style.display = "flex";
       document.getElementById("btnSkipWord").style.display = "none";
       isShowingResult = true;
+      updateRatingPreviews();
     }
 
     function nextWord(rating) {
