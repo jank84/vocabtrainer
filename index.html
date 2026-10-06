@@ -2090,7 +2090,8 @@
       'days_and_months.txt',
       'frequency_adverbs.txt',
       'numbers_extended.txt',
-      'adjectives_p31-32.txt'
+      'adjectives_p31-32.txt',
+      'nouns_p50.txt'
     ];
     const FILES_REGISTRY_KEY = 'anki_scribe_files';      // JSON array of {slug, name}
     const ACTIVE_FILE_KEY = 'anki_scribe_active_file';    // slug of last-used file
@@ -2972,10 +2973,13 @@
     // ---- Changelog / "What's New" dialog ----
     // Bump APP_VERSION whenever a new entry is added; the dialog is then shown
     // exactly once after the new version has been installed and opened.
-    const APP_VERSION = '1.9.0';
-    const APP_RELEASE_DATE = '2026-09-20';
+    const APP_VERSION = '1.10.0';
+    const APP_RELEASE_DATE = '2026-10-06';
     const CHANGELOG_KEY = 'anki_scribe_seen_version';
     const CHANGELOG = {
+      '1.10.0': [
+        'Added: "nouns_p50" — topic: noums of page 50.'
+      ],
       '1.9.0': [
         'Fix anki SM-2 learn algorithm'
       ],
