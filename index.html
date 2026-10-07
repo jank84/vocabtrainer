@@ -1868,6 +1868,105 @@
       transition: width 0.3s;
     }
 
+    /* ---- PWA install banner ---- */
+    .install-banner {
+      position: fixed;
+      left: 50%;
+      bottom: calc(12px + var(--safe-bottom));
+      transform: translate(-50%, 160%);
+      width: calc(100% - 24px);
+      max-width: 440px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 150;
+      transition: transform 0.35s ease;
+    }
+
+    .install-banner.show {
+      transform: translate(-50%, 0);
+    }
+
+    .install-banner-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+
+    .install-banner-text {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .install-banner-text strong {
+      font-size: 14px;
+    }
+
+    .install-banner-text span {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    .install-banner-btn {
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 9px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .install-banner-btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .install-banner-close {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      flex-shrink: 0;
+    }
+
+    /* Install help modal steps */
+    .install-steps {
+      margin: 0 0 16px;
+      padding-left: 22px;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .install-steps li {
+      margin-bottom: 6px;
+    }
+
+    .install-note {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
   </style>
 </head>
 <body>
@@ -2064,6 +2163,32 @@
           <button id="changelogOk" type="button" class="btn" style="background:var(--primary); color:#fff; padding:10px 24px; border-radius:12px; font-size:14px; font-weight:600; border:none; cursor:pointer;">Got it</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- PWA install banner (native prompt on Chromium, how-to elsewhere) -->
+  <div class="install-banner" id="installBanner">
+    <img class="install-banner-icon" src="icons/icon-192.png" alt="Anki Scribe icon">
+    <div class="install-banner-text">
+      <strong>Anki Scribe</strong>
+      <span id="installBannerSub">Add to home screen for quick access and offline use.</span>
+    </div>
+    <button class="install-banner-btn" id="installBannerBtn" type="button">Install</button>
+    <button class="install-banner-close" id="installBannerClose" type="button" title="Dismiss">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+  </div>
+
+  <!-- Install help modal (iOS, Firefox & other browsers without beforeinstallprompt) -->
+  <div class="modal-overlay" id="installHelpOverlay">
+    <div class="modal" style="border-radius:20px; max-width:420px;">
+      <div class="modal-header">
+        <h2>Install Anki Scribe</h2>
+        <button class="btn-icon" id="installHelpClose">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body" id="installHelpBody" style="padding:20px 24px 28px;"></div>
     </div>
   </div>
 
@@ -2973,10 +3098,13 @@
     // ---- Changelog / "What's New" dialog ----
     // Bump APP_VERSION whenever a new entry is added; the dialog is then shown
     // exactly once after the new version has been installed and opened.
-    const APP_VERSION = '1.10.0';
-    const APP_RELEASE_DATE = '2026-10-06';
+    const APP_VERSION = '1.11.0';
+    const APP_RELEASE_DATE = '2026-10-07';
     const CHANGELOG_KEY = 'anki_scribe_seen_version';
     const CHANGELOG = {
+      '1.11.0': [
+        'Installer banner'
+      ],
       '1.10.0': [
         'Added: "nouns_p50" — topic: noums of page 50.'
       ],
@@ -4107,6 +4235,186 @@
     });
 
     // =========================================================================
+    // PWA INSTALL PROMPT
+    // Native prompt via beforeinstallprompt on Chromium browsers; manual
+    // step-by-step instructions everywhere else (iOS Safari, Firefox, ...).
+    // =========================================================================
+    const installBanner = document.getElementById('installBanner');
+    const installBannerBtn = document.getElementById('installBannerBtn');
+    const installBannerSub = document.getElementById('installBannerSub');
+    const installBannerClose = document.getElementById('installBannerClose');
+    const installHelpOverlay = document.getElementById('installHelpOverlay');
+    const installHelpBody = document.getElementById('installHelpBody');
+    const installHelpClose = document.getElementById('installHelpClose');
+
+    const INSTALL_DECLINE_KEY = 'anki_scribe_install_declined_until';
+    const INSTALL_IMPRESSIONS_KEY = 'anki_scribe_install_impressions';
+    const INSTALL_DONE_KEY = 'anki_scribe_install_accepted';
+    const INSTALL_DECLINE_SUPPRESS_MS = 30 * 24 * 60 * 60 * 1000; // silence after a decline
+    const INSTALL_MAX_IMPRESSIONS = 3;                            // stop auto-showing after 3 ignored
+
+    const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches
+      || window.navigator.standalone === true;                                // iOS Safari
+    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent)
+      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // iPadOS 13+
+    const isAndroidDevice = /Android/i.test(navigator.userAgent);
+    const isFirefoxBrowser = /Firefox|FxiOS/i.test(navigator.userAgent);
+
+    let deferredInstallPrompt = null;
+    let installImpressionCounted = false;
+
+    function installDeclinedRecently() {
+      return parseInt(localStorage.getItem(INSTALL_DECLINE_KEY) || '0', 10) > Date.now();
+    }
+
+    // Any explicit decline (banner ✕ or dismissing the native dialog):
+    // go quiet for a month and restart impression counting afterwards.
+    function recordInstallDecline() {
+      localStorage.setItem(INSTALL_DECLINE_KEY, String(Date.now() + INSTALL_DECLINE_SUPPRESS_MS));
+      localStorage.setItem(INSTALL_IMPRESSIONS_KEY, '0');
+    }
+
+    function recordInstallAccepted() {
+      localStorage.setItem(INSTALL_DONE_KEY, '1');
+    }
+
+    // Auto-promotion is suppressed when: running as installed app, the user
+    // already installed via this browser, a decline is still within its
+    // silence window, or the banner was ignored too many times. The
+    // stats-modal "Install App" entry always stays available on purpose.
+    function installPromoSuppressed() {
+      if (isStandaloneMode || localStorage.getItem(INSTALL_DONE_KEY)) return true;
+      if (installDeclinedRecently()) return true;
+      return parseInt(localStorage.getItem(INSTALL_IMPRESSIONS_KEY) || '0', 10) >= INSTALL_MAX_IMPRESSIONS;
+    }
+
+    // mode: 'native' -> button triggers the browser install dialog
+    //       'manual' -> button opens per-platform how-to instructions
+    function showInstallBanner(mode) {
+      if (installPromoSuppressed()) return;
+      if (!installImpressionCounted) {
+        installImpressionCounted = true;
+        const shown = parseInt(localStorage.getItem(INSTALL_IMPRESSIONS_KEY) || '0', 10);
+        localStorage.setItem(INSTALL_IMPRESSIONS_KEY, String(shown + 1));
+      }
+      if (mode === 'native') {
+        installBannerSub.textContent = 'Add to home screen for quick access and offline use.';
+        installBannerBtn.textContent = 'Install';
+      } else {
+        installBannerSub.textContent = 'Works offline — here is how to add it to your home screen.';
+        installBannerBtn.textContent = 'How-to';
+      }
+      installBanner.classList.add('show');
+    }
+
+    function hideInstallBanner() {
+      installBanner.classList.remove('show');
+    }
+
+    function openInstallHelp() {
+      installHelpBody.innerHTML = buildInstallHelpHtml();
+      installHelpOverlay.classList.add('open');
+    }
+
+    function closeInstallHelp() {
+      installHelpOverlay.classList.remove('open');
+    }
+
+    function buildInstallHelpHtml() {
+      if (isIOSDevice) {
+        return `
+          <ol class="install-steps">
+            <li>Open this page in <strong>Safari</strong> (works in Chrome/Edge/Firefox on iOS 16.4+ too).</li>
+            <li>Tap the <strong>Share</strong> button (square with an arrow, above the address bar).</li>
+            <li>Scroll down and tap <strong>&quot;Add to Home Screen&quot;</strong>.</li>
+            <li>Tap <strong>Add</strong> — Anki Scribe appears on your home screen and opens fullscreen.</li>
+          </ol>
+          <div class="install-note">Once added, the app works offline: words, OCR engine and fonts are cached after first use.</div>
+        `;
+      }
+      if (isAndroidDevice && isFirefoxBrowser) {
+        return `
+          <ol class="install-steps">
+            <li>Tap the <strong>☰ menu</strong> in Firefox.</li>
+            <li>Tap <strong>&quot;Add to Home screen&quot;</strong>.</li>
+            <li>Confirm — a shortcut is created on your home screen.</li>
+          </ol>
+          <div class="install-note">Note: Firefox opens the app inside the browser. For a standalone app without browser bars, install with Chrome or Samsung Internet (⋮ menu → &quot;Add to Home screen&quot; → Install).</div>
+        `;
+      }
+      if (isAndroidDevice) {
+        return `
+          <ol class="install-steps">
+            <li>Tap the <strong>⋮ menu</strong> at the top right.</li>
+            <li>Tap <strong>&quot;Add to Home screen&quot;</strong>.</li>
+            <li>Confirm with <strong>&quot;Install&quot;</strong> — Anki Scribe appears as a real app and works offline.</li>
+          </ol>
+          <div class="install-note">Tip: Chrome installs PWAs as full apps via Google Play services. On devices without Play services only a browser shortcut is created.</div>
+        `;
+      }
+      return `
+        <ol class="install-steps">
+          <li>Look for the <strong>Install</strong> icon at the right end of the address bar, or</li>
+          <li>open the browser <strong>menu (⋮ / ⋯)</strong> and choose <strong>&quot;Install Anki Scribe…&quot;</strong>.</li>
+        </ol>
+        <div class="install-note">On iPhone/iPad use Safari: Share → &quot;Add to Home Screen&quot;. On Firefox desktop the free &quot;PWA for Firefox&quot; extension enables installation.</div>
+      `;
+    }
+
+    // Shared action for banner button and stats-modal button: native prompt if
+    // available, otherwise the manual instructions modal.
+    async function triggerInstallOrHelp() {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const { outcome } = await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        if (outcome === 'accepted') {
+          recordInstallAccepted();
+        } else {
+          // User said no to the native dialog — stay quiet for a month
+          recordInstallDecline();
+        }
+        hideInstallBanner();
+        return;
+      }
+      openInstallHelp();
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      showInstallBanner('native');
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      recordInstallAccepted();
+      hideInstallBanner();
+    });
+
+    installBannerBtn.addEventListener('click', triggerInstallOrHelp);
+
+    installBannerClose.addEventListener('click', () => {
+      recordInstallDecline();
+      hideInstallBanner();
+    });
+
+    installHelpClose.addEventListener('click', closeInstallHelp);
+    installHelpOverlay.addEventListener('click', (e) => {
+      if (e.target === installHelpOverlay) closeInstallHelp();
+    });
+
+    // Browsers without beforeinstallprompt (iOS Safari, Firefox) never fire the
+    // event; Chrome may also fire it late (30s engagement heuristic). Show the
+    // how-to banner after a while — it upgrades to the native prompt if the
+    // event arrives in the meantime.
+    if (!isStandaloneMode) {
+      setTimeout(() => {
+        if (!deferredInstallPrompt) showInstallBanner('manual');
+      }, 45000);
+    }
+
+    // =========================================================================
     // STATS MODAL
     // =========================================================================
     const statsModal = document.getElementById("statsModal");
@@ -4265,6 +4573,15 @@
       });
 
       html += `</div>
+        ${isStandaloneMode ? '' : `
+        <div class="settings-section">
+          <h3>Install App</h3>
+          <p class="setting-hint">${deferredInstallPrompt
+            ? 'Add Anki Scribe to your home screen for quick access and offline use.'
+            : 'Your browser does not offer a one-tap install dialog here — the button opens step-by-step instructions for your device.'}</p>
+          <button class="btn-update-lessons" id="btnInstallApp">${deferredInstallPrompt ? 'Install Anki Scribe' : 'How to install on this device'}</button>
+        </div>
+        `}
         <div class="data-section">
           <h3>Data Management</h3>
           <div class="data-btn-row">
@@ -4301,6 +4618,12 @@
       autoRecognizeToggle.addEventListener("change", () => {
         setAutoRecognizeEnabled(autoRecognizeToggle.checked);
       });
+
+      // Install app button (only rendered when not running as installed app)
+      const btnInstallApp = document.getElementById("btnInstallApp");
+      if (btnInstallApp) {
+        btnInstallApp.addEventListener("click", triggerInstallOrHelp);
+      }
 
       // Skip batch button handler
       document.getElementById("btnSkipBatch").addEventListener("click", () => {
