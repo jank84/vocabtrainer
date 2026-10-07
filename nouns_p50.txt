@@ -1,21 +1,58 @@
 #separator:semicolon
 #html:true
-bank (masculine);bank
-bakery (feminine);piekarnia
-café (feminine);kawiarnia
-confectionery, pastry shop (feminine);cukiernia
-clothing (feminine);odzież
+advertisement, sign;reklama
+baked goods, bread;pieczywo
+bag;torba
+baguette;bagietka
+bakery;piekarnia
+bank;bank
+banknotes (plural);banknoty
+bread;chleb
+café;kawiarnia
+cake;ciasto
+camera;aparat fotograficzny
+coffee;kawa
+confectionery, pastry shop;cukiernia
+cosmetics (plural);kosmetyki
+cream;krem
 delicatessen, grocery store (plural);delikatesy
-drugstore, beauty store (feminine);drogeria
+drugstore, beauty store;drogeria
 electronics store (radio, TV);RTV
-florist's shop (feminine);kwiaciarnia
-footwear, shoes (neuter);obuwie
-hairdresser, barbershop (masculine);fryzjer
+florist's shop;kwiaciarnia
+flowers (plural);kwiaty
+footwear, shoes;obuwie
+glass;szklanka
+hairbrush;szczotka
+hairdresser, barbershop;fryzjer
+high heels (plural);szpilki
 home appliances (plural);AGD
-jewellery (feminine);biżuteria
-kiosk (masculine);kiosk
-laundry (feminine);pralnia
-optician, eyewear store (masculine);optyk
-pharmacy (feminine);apteka
-tea house (feminine);herbaciarnia
-travel agency (neuter);biuro podróży
+jam;dżem
+jar;słoik
+jewellery;biżuteria
+jewellery box;szkatułka
+kiosk;kiosk
+kiwi;kiwi
+laundry;pralnia
+layer cake, torte;tort
+mixer;mikser
+money (plural);pieniądze
+monitor;monitor
+necklace;naszyjnik
+newspaper;gazeta
+optician, eyewear store;optyk
+pharmacy;apteka
+photo album;album
+photos, pictures (plural);zdjęcia
+roses (plural);róże
+shampoo;szampon
+shoes (plural);buty
+sunglasses (plural);okulary przeciwsłoneczne
+tablets, pills (plural);tabletki
+tea;herbata
+tea house;herbaciarnia
+television, TV set;telewizor
+T-shirt;koszulka
+travel agency;biuro podróży
+travel catalogue;katalog podróżniczy
+vase;wazon
+washing machine;pralka
