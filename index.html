@@ -279,6 +279,131 @@
       background: rgba(108, 127, 248, 0.05);
     }
 
+    /* ---- Cross-file mix button (top of file picker) ---- */
+    .file-picker-mix {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 12px;
+      margin-bottom: 6px;
+      border: 1.5px solid var(--primary);
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      background: rgba(108, 127, 248, 0.06);
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .file-picker-mix:hover {
+      background: rgba(108, 127, 248, 0.12);
+    }
+
+    .file-picker-mix.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* ---- Mix mode modal (multi-select) ---- */
+    .mix-file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .mix-file-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+
+    .mix-file-item:hover {
+      background: var(--bg);
+    }
+
+    .mix-file-item.selected {
+      border-color: var(--primary);
+      background: rgba(108, 127, 248, 0.07);
+    }
+
+    .mix-file-check {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: transparent;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+
+    .mix-file-item.selected .mix-file-check {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .mix-file-name {
+      flex: 1;
+      min-width: 0;
+      font-size: 14px;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .mix-file-count {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .mix-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px 20px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .mix-summary {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .mix-start-btn {
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 11px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .mix-start-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
     .prompt-word {
       font-size: 22px;
       font-weight: 700;
@@ -2104,6 +2229,10 @@
   <div class="file-picker-overlay" id="filePickerOverlay">
     <div class="file-picker-dropdown" id="filePickerDropdown">
       <h3>Vocabulary Files</h3>
+      <div class="file-picker-mix" id="filePickerMixBtn" title="Select multiple files and learn them together">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+        <span id="filePickerMixLabel">Learn across files (mix)</span>
+      </div>
       <div id="filePickerList">
         <!-- Populated by JS -->
       </div>
@@ -2112,6 +2241,28 @@
         Import .txt file
       </div>
       <input type="file" id="vocabFileInput" accept=".txt" style="display:none;">
+    </div>
+  </div>
+
+  <!-- Mix Mode: multi-select vocabulary files for cross-file learning -->
+  <div class="modal-overlay" id="mixModalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Learn Across Files</h2>
+        <button class="btn-icon" id="mixModalClose">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="setting-hint">Pick two or more files to train their words together as one set. Every combination keeps its own batches and statistics — switch back to it any time and continue right where you left off.</p>
+        <div class="mix-file-list" id="mixFileList">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+      <div class="mix-footer">
+        <span class="mix-summary" id="mixSummary">Select at least 2 files</span>
+        <button class="mix-start-btn" id="mixStartBtn" disabled>Start Mix</button>
+      </div>
     </div>
   </div>
 
@@ -2445,6 +2596,99 @@
       return true;
     }
 
+    // =========================================================================
+    // MIX MODE — cross-file learning
+    // A mix is identified by its sorted slug list ("mix:a+b+c"). All per-file
+    // storage keys (stats / batch / batch size / skipped) reuse the mix id as
+    // their slug, so every combination keeps its own stable progress even when
+    // other files or combinations are selected later. Word ids inside a mixed
+    // vocabulary are namespaced ("<slug>::<id>") to stay unique across files.
+    // =========================================================================
+    const MIX_PREFIX = 'mix:';
+    const MIX_SELECTION_KEY = 'anki_scribe_mix_selection';
+
+    function isMixSlug(slug) {
+      return typeof slug === 'string' && slug.startsWith(MIX_PREFIX);
+    }
+
+    function makeMixId(slugs) {
+      return MIX_PREFIX + [...slugs].sort().join('+');
+    }
+
+    // Slugs of a mix id that still exist in the file registry
+    function parseMixSlugs(slug) {
+      if (!isMixSlug(slug)) return [];
+      const registry = new Set(getFileRegistry().map(f => f.slug));
+      return slug.slice(MIX_PREFIX.length).split('+').filter(s => registry.has(s));
+    }
+
+    // Display name for a mix, e.g. "lesson-1 + colors"
+    function mixDisplayName(slug) {
+      const files = getFileRegistry();
+      return parseMixSlugs(slug).map(s => (files.find(f => f.slug === s) || {}).name || s).join(' + ');
+    }
+
+    function getMixSelection() {
+      try {
+        const raw = localStorage.getItem(MIX_SELECTION_KEY);
+        const list = raw ? JSON.parse(raw) : [];
+        return Array.isArray(list) ? list.filter(s => typeof s === 'string') : [];
+      } catch { return []; }
+    }
+
+    function saveMixSelection(slugs) {
+      const clean = [...new Set(slugs)].sort();
+      if (clean.length >= 2) {
+        localStorage.setItem(MIX_SELECTION_KEY, JSON.stringify(clean));
+      } else {
+        localStorage.removeItem(MIX_SELECTION_KEY);
+      }
+    }
+
+    // Load all selected files and concatenate their words into one vocabulary.
+    // Word ids get namespaced by file slug; each entry remembers its source.
+    async function buildMixedVocabulary(slugs) {
+      const vocab = [];
+      for (const slug of slugs) {
+        let record = null;
+        try {
+          record = await loadVocabFile(slug);
+        } catch (e) { /* file gone — skip it */ }
+        if (!record) continue;
+        const name = record.name || slug;
+        for (const v of parseVocabularyText(record.text)) {
+          vocab.push({
+            id: slug + '::' + v.id,
+            prompt: v.prompt,
+            answer: v.answer,
+            answerDisplay: v.answerDisplay,
+            fileName: name
+          });
+        }
+      }
+      return vocab;
+    }
+
+    // Activate a mix selection (persisted) and refresh the whole training UI.
+    async function switchToMixSelection(slugs) {
+      const registry = new Set(getFileRegistry().map(f => f.slug));
+      const clean = [...new Set(slugs)].filter(s => registry.has(s));
+      if (clean.length < 2) return false;
+      const vocab = await buildMixedVocabulary(clean);
+      if (vocab.length === 0) return false;
+      saveMixSelection(clean);
+      VOCABULARY = vocab;
+      setActiveFileSlug(makeMixId(clean));
+      resolveBatch();
+      updateBatchIndicator();
+      updateProgressRing();
+      updateFilePickerLabel();
+      lastCheckResult = null;
+      const next = pickNextVocab();
+      if (next) showVocab(next);
+      return true;
+    }
+
     // Decode HTML entities (e.g. &#x27; -> ')
     function decodeHTML(str) {
       const el = document.createElement('textarea');
@@ -2457,6 +2701,13 @@
       const el = document.getElementById('promptLabel');
       if (!el) return;
       const files = getFileRegistry();
+      // Mix mode: show "Mix · N files" with the combined names as tooltip
+      if (isMixSlug(activeFileSlug)) {
+        const parts = parseMixSlugs(activeFileSlug);
+        el.textContent = 'Mix · ' + parts.length + ' files';
+        el.title = 'Mixed: ' + mixDisplayName(activeFileSlug);
+        return;
+      }
       const file = files.find(f => f.slug === activeFileSlug);
       // Show short name: first 12 chars of display name, or "PL" fallback
       const name = file ? file.name : 'PL';
@@ -2644,12 +2895,34 @@
           skipped: readSkippedFor(f.slug)
         });
       }
+      // Mix combinations (cross-file learning): find every stored "mix:" slug
+      const mixSlugs = new Set();
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key) continue;
+        for (const p of ['anki_scribe_stats_', 'anki_scribe_batch_', 'anki_scribe_skipped_']) {
+          if (key.startsWith(p)) {
+            const s = key.slice(p.length);
+            if (isMixSlug(s)) mixSlugs.add(s);
+          }
+        }
+      }
+      const mixes = [...mixSlugs].sort().map(slug => ({
+        slug: slug,
+        name: mixDisplayName(slug),
+        stats: readStatsFor(slug),
+        batch: readBatchFor(slug) || [],
+        batchSize: readBatchSizeFor(slug) || DEFAULT_BATCH_SIZE,
+        skipped: readSkippedFor(slug)
+      }));
       const data = {
         version: 3,
         exportedAt: new Date().toISOString(),
         appVersion: APP_VERSION,
         activeFile: activeFileSlug,
         files: files,
+        mixes: mixes,
+        mixSelection: getMixSelection(),
         achievements: loadAchievements()
       };
       const json = JSON.stringify(data, null, 2);
@@ -2755,6 +3028,42 @@
                 }
               }
 
+              // Mix combinations: same semantics as file entries but they never
+              // touch the file registry or IndexedDB (a mix is only a slug namespace)
+              let mixTotal = 0;
+              if (Array.isArray(data.mixes)) {
+                for (const m of data.mixes) {
+                  if (!m || !isMixSlug(m.slug)) continue;
+                  const mStats = (m.stats && typeof m.stats === 'object') ? m.stats : {};
+                  const mBatch = Array.isArray(m.batch) ? m.batch : null;
+                  const mSize = (typeof m.batchSize === 'number' && m.batchSize > 0) ? m.batchSize : null;
+                  const mSkipped = Array.isArray(m.skipped) ? m.skipped : null;
+                  if (mode === "replace") {
+                    writeStatsFor(m.slug, mStats);
+                    if (mBatch) writeBatchFor(m.slug, mBatch);
+                    if (mSize) writeBatchSizeFor(m.slug, mSize);
+                    if (mSkipped) writeSkippedFor(m.slug, mSkipped);
+                  } else {
+                    const cur = readStatsFor(m.slug);
+                    for (const id of Object.keys(mStats)) {
+                      const inc = mStats[id];
+                      const c = cur[id];
+                      if (!c || (inc.attempts || 0) > (c.attempts || 0)) cur[id] = inc;
+                    }
+                    writeStatsFor(m.slug, cur);
+                    if (mBatch && !readBatchFor(m.slug)) writeBatchFor(m.slug, mBatch);
+                    if (mSize && readBatchSizeFor(m.slug) === null) writeBatchSizeFor(m.slug, mSize);
+                    if (mSkipped && readSkippedFor(m.slug).length === 0) writeSkippedFor(m.slug, mSkipped);
+                  }
+                  mixTotal++;
+                }
+              }
+              // Restore the remembered mix selection (only files that exist now)
+              if (Array.isArray(data.mixSelection)) {
+                const regSlugs = new Set(getFileRegistry().map(f => f.slug));
+                saveMixSelection(data.mixSelection.filter(s => typeof s === 'string' && regSlugs.has(s)));
+              }
+
               const incomingAch = (data.achievements && typeof data.achievements === "object") ? data.achievements : null;
               if (incomingAch) {
                 if (mode === "replace") {
@@ -2783,11 +3092,19 @@
 
               let switched = false;
               if (typeof data.activeFile === "string" && data.activeFile) {
-                const inRegistry = getFileRegistry().some(f => f.slug === data.activeFile);
-                if (inRegistry && data.activeFile !== activeFileSlug) {
-                  switched = await switchVocabFile(data.activeFile);
-                } else if (inRegistry) {
-                  setActiveFileSlug(data.activeFile);
+                if (isMixSlug(data.activeFile)) {
+                  // Reactivate the backed-up mix combination, if all its files exist
+                  const parts = parseMixSlugs(data.activeFile);
+                  if (parts.length >= 2 && makeMixId(parts) === data.activeFile) {
+                    switched = await switchToMixSelection(parts);
+                  }
+                } else {
+                  const inRegistry = getFileRegistry().some(f => f.slug === data.activeFile);
+                  if (inRegistry && data.activeFile !== activeFileSlug) {
+                    switched = await switchVocabFile(data.activeFile);
+                  } else if (inRegistry) {
+                    setActiveFileSlug(data.activeFile);
+                  }
                 }
               }
 
@@ -2797,7 +3114,7 @@
                 updateProgressRing();
               }
 
-              resolve({ files: entries.length, words: wordStatsTotal });
+              resolve({ files: entries.length, mixes: mixTotal, words: wordStatsTotal });
             } catch (err) {
               reject("Failed to parse backup file: " + err.message);
             }
@@ -3144,10 +3461,13 @@
     // ---- Changelog / "What's New" dialog ----
     // Bump APP_VERSION whenever a new entry is added; the dialog is then shown
     // exactly once after the new version has been installed and opened.
-    const APP_VERSION = '1.12.1';
+    const APP_VERSION = '1.13.0';
     const APP_RELEASE_DATE = '2026-10-13';
     const CHANGELOG_KEY = 'anki_scribe_seen_version';
     const CHANGELOG = {
+      '1.13.0': [
+        'New: Learn across files (mix) — select multiple vocabulary files in the picker and train them as one set; each combination keeps its own stable batches, statistics and skipped words'
+      ],
       '1.12.1': [
         'Fixed word-skip: skipped words are now removed from the batch AND never return through the review queue; skipped words can be restored in Stats > View All Words'
       ],
@@ -4597,6 +4917,7 @@
 
         <div class="settings-section">
           <h3>Batch Settings</h3>
+          ${isMixSlug(activeFileSlug) ? `<p class="setting-hint">Mix mode — learning across: ${mixDisplayName(activeFileSlug)}. This combination has its own batches and statistics.</p>` : ''}
           <div class="setting-row">
             <label for="batchSizeInput">Words per batch</label>
             <input type="number" id="batchSizeInput" min="1" max="${VOCABULARY.length}" value="${batchSize}">
@@ -4615,7 +4936,7 @@
             <div class="batch-word-item${isSkipped ? ' bw-skipped' : ''}">
               <div>
                 <span class="bw-prompt">${v.prompt}</span>
-                <span class="bw-answer"> — ${v.answerDisplay}</span>
+                <span class="bw-answer"> — ${v.answerDisplay}${v.fileName ? ` <span style="opacity:0.6;">· ${v.fileName}</span>` : ''}</span>
               </div>
               <button class="btn-word-skip" data-vocab-id="${v.id}">${isSkipped ? 'Restore' : 'Skip'}</button>
             </div>
@@ -4823,7 +5144,7 @@
         try {
           const result = await importStats(file, mode);
           importStatus.className = "import-status success";
-          importStatus.textContent = `Imported ${result.files} files, ${result.words} word stats (${mode} mode). Refreshing...`;
+          importStatus.textContent = `Imported ${result.files} files, ${result.mixes || 0} mixes, ${result.words} word stats (${mode} mode). Refreshing...`;
           // Refresh the stats modal after a short delay
           setTimeout(() => {
             renderStats();
@@ -4871,12 +5192,29 @@
 
     function renderFilePickerList() {
       const files = getFileRegistry();
+      // Mix button at the top: reflect current state (active mix / saved selection)
+      const mixBtn = document.getElementById('filePickerMixBtn');
+      const mixBtnLabel = document.getElementById('filePickerMixLabel');
+      if (isMixSlug(activeFileSlug)) {
+        mixBtn.classList.add('active');
+        mixBtnLabel.textContent = 'Mix active · ' + parseMixSlugs(activeFileSlug).length + ' files';
+      } else {
+        mixBtn.classList.remove('active');
+        const savedSel = getMixSelection();
+        mixBtnLabel.textContent = savedSel.length >= 2
+          ? 'Learn across files (mix) — saved: ' + savedSel.length + ' files'
+          : 'Learn across files (mix)';
+      }
+      // Files that belong to the currently active mix get a small badge
+      const activeMixParts = isMixSlug(activeFileSlug) ? parseMixSlugs(activeFileSlug) : [];
       let html = '';
       for (const f of files) {
         const isActive = f.slug === activeFileSlug;
+        const inMix = activeMixParts.includes(f.slug);
         html += `
           <div class="file-picker-item ${isActive ? 'active' : ''}" data-slug="${f.slug}">
             <span class="fp-name">${f.name}</span>
+            ${inMix ? '<span class="fp-count">in mix</span>' : ''}
             ${files.length > 1 ? `<button class="fp-delete" data-delete-slug="${f.slug}" title="Delete this file">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M5 6l1 14h12l1-14"/></svg>
             </button>` : ''}
@@ -4915,12 +5253,30 @@
           localStorage.removeItem('anki_scribe_stats_' + slug);
           localStorage.removeItem('anki_scribe_batch_' + slug);
           localStorage.removeItem('anki_scribe_batch_size_' + slug);
+          localStorage.removeItem('anki_scribe_skipped_' + slug);
+
+          // Keep the mix selection consistent when a mixed-in file disappears
+          const prevSel = getMixSelection();
+          const newSel = prevSel.filter(s => s !== slug);
+          if (newSel.length !== prevSel.length) saveMixSelection(newSel);
+          const activeMixBroken = isMixSlug(activeFileSlug) &&
+            activeFileSlug.slice(MIX_PREFIX.length).split('+').includes(slug);
 
           // If we deleted the active file, switch to another
           if (slug === activeFileSlug) {
             const remaining = getFileRegistry();
             if (remaining.length > 0) {
               await switchVocabFile(remaining[0].slug);
+            }
+          } else if (activeMixBroken) {
+            // The active mix lost one of its files: rebuild with the rest or leave mix mode
+            if (newSel.length >= 2) {
+              await switchToMixSelection(newSel);
+            } else {
+              const remaining = getFileRegistry();
+              if (remaining.length > 0) {
+                await switchVocabFile(remaining[0].slug);
+              }
             }
           }
           renderFilePickerList();
@@ -4983,6 +5339,89 @@
     });
 
     // =========================================================================
+    // MIX MODE MODAL — multi-select for cross-file learning
+    // =========================================================================
+    const mixModalOverlay = document.getElementById('mixModalOverlay');
+    const mixFileList = document.getElementById('mixFileList');
+    const mixSummary = document.getElementById('mixSummary');
+    const mixStartBtn = document.getElementById('mixStartBtn');
+    let _mixDraft = new Set();   // slugs checked while the dialog is open
+
+    function updateMixSummary() {
+      const n = _mixDraft.size;
+      let words = 0;
+      for (const s of _mixDraft) {
+        const el = mixFileList.querySelector(`.mix-file-item[data-mix-slug="${s}"] .mix-file-count`);
+        if (el) words += parseInt(el.textContent) || 0;
+      }
+      mixSummary.textContent = n === 0 ? 'Select at least 2 files' : `${n} file${n > 1 ? 's' : ''} · ${words} words`;
+      mixStartBtn.disabled = n < 2;
+    }
+
+    async function openMixModal() {
+      // Pre-check the active mix, or the last saved selection otherwise
+      const preselect = isMixSlug(activeFileSlug) ? parseMixSlugs(activeFileSlug) : getMixSelection();
+      _mixDraft = new Set(preselect);
+      mixFileList.innerHTML = '<div class="mix-summary">Loading…</div>';
+      mixModalOverlay.classList.add('open');
+
+      const files = getFileRegistry();
+      let html = '';
+      for (const f of files) {
+        let count = 0;
+        try {
+          const record = await loadVocabFile(f.slug);
+          if (record) count = parseVocabularyText(record.text).length;
+        } catch (e) { /* unreadable file — show as empty */ }
+        html += `
+          <div class="mix-file-item ${_mixDraft.has(f.slug) ? 'selected' : ''}" data-mix-slug="${f.slug}">
+            <span class="mix-file-check">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
+            <span class="mix-file-name">${f.name}</span>
+            <span class="mix-file-count">${count} words</span>
+          </div>`;
+      }
+      mixFileList.innerHTML = html;
+
+      mixFileList.querySelectorAll('.mix-file-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const slug = item.dataset.mixSlug;
+          if (_mixDraft.has(slug)) _mixDraft.delete(slug); else _mixDraft.add(slug);
+          item.classList.toggle('selected');
+          updateMixSummary();
+        });
+      });
+      updateMixSummary();
+    }
+
+    function closeMixModal() {
+      mixModalOverlay.classList.remove('open');
+    }
+
+    document.getElementById('filePickerMixBtn').addEventListener('click', () => {
+      closeFilePicker();
+      openMixModal();
+    });
+    document.getElementById('mixModalClose').addEventListener('click', closeMixModal);
+    mixModalOverlay.addEventListener('click', (e) => {
+      if (e.target === mixModalOverlay) closeMixModal();
+    });
+    mixStartBtn.addEventListener('click', async () => {
+      const slugs = [..._mixDraft];
+      if (slugs.length < 2) return;
+      mixStartBtn.disabled = true; // avoid double submit while files load
+      const ok = await switchToMixSelection(slugs);
+      if (!ok) {
+        mixStartBtn.disabled = false;
+        alert('Could not start the mix — the selected files contain no vocabulary.');
+        return;
+      }
+      mixStartBtn.disabled = false;
+      closeMixModal();
+    });
+
+    // =========================================================================
     // INIT
     // =========================================================================
     // Cache voices as soon as they're available (Chrome/Edge load them async)
@@ -5008,11 +5447,30 @@
         console.error('Failed to sync default vocabulary files:', err);
       }
 
+      // Drop files from the saved mix selection that no longer exist
+      {
+        const regSlugs = new Set(getFileRegistry().map(f => f.slug));
+        saveMixSelection(getMixSelection().filter(s => regSlugs.has(s)));
+      }
+
       // Determine which vocab file to load
       const savedSlug = getActiveFileSlug();
       let vocabLoaded = false;
 
-      if (savedSlug) {
+      if (savedSlug && isMixSlug(savedSlug)) {
+        // Previously in mix mode: rebuild the combined vocabulary if all parts exist
+        const parts = parseMixSlugs(savedSlug);
+        if (parts.length >= 2) {
+          const mixedVocab = await buildMixedVocabulary(parts);
+          if (mixedVocab.length > 0) {
+            VOCABULARY = mixedVocab;
+            activeFileSlug = savedSlug;
+            vocabLoaded = true;
+          }
+        }
+      }
+
+      if (!vocabLoaded && savedSlug) {
         // Try loading the previously active file from IndexedDB
         const result = await loadVocabularyForSlug(savedSlug);
         if (result) {
