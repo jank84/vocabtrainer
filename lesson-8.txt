@@ -1,0 +1,191 @@
+#separator:semicolon
+#html:true
+very sleepy (expression);bardzo zaspany
+without (przyimek);bez
+without sugar (expression);bez cukru
+without lemon (expression);bez cytryny
+without ice (expression);bez lodu
+without milk (expression);bez mleka
+white coffee (expression);biała kawa
+White or black? (expression);Białą czy czarną?
+cottage cheese (noun, Masculine);biały ser
+roll / bun (noun, Feminine);bułka
+Do you want cold cut or cheese? (expression);Chcesz wędlinę czy ser?
+I want to be slim (expression);chcę być szczupła
+gladly (adverb);chętnie
+bread (noun, Masculine);chleb
+lean sausage (expression);chuda kiełbasa
+lean ham (expression);chuda szynka
+slim (adjective);chudy
+plum pie (expression);ciasto śliwkowe
+dark, brown (adjective);ciemny
+brown bread (expression);ciemny chleb
+What do you want for breakfast? (expression);Co chcesz na śniadanie?
+what's for supper today? (expression);co dziś jest na kolację
+what is your favourite food? (expression);co lubisz jeść
+What are having? (expression);Co macie dobrego?
+What are you drinking? (expression);Co pijecie?
+What is it? (expression);Co to jest?
+What does it mean? (expression);Co to znaczy?
+something light (expression);coś lekkiego
+lemon (noun, Feminine);cytryna
+kettle / teapot (noun, Masculine);czajnik
+black tea (expression);czarna herbata
+black coffee (expression);czarna kawa
+black olive (expression);czarna oliwka
+often (adverb);często
+may I ask (expression);czy mogę prosić
+Are you still asleep? (expression);Czy ty jeszcze śpisz?
+I practice the instrumental case (expression);ćwiczę narzędnik
+dish (noun, Neuter);danie
+second course (expression);drugie danie
+strawberry jam (expression);dżem truskawkowy
+fine, nice (adverb);fajnie
+cup (noun, Feminine);filiżanka
+chips (noun);frytki
+pot (noun, Masculine);garnek
+hot tea (expression);gorąca herbata
+boiled egg (expression);gotowane jajko
+Ready! (expression);Gotowe!
+I make breakfast (expression);ja robię śniadanie
+apple (noun, Neuter);jabłko
+scrambled eggs (noun, Feminine);jajecznica
+egg (noun, Neuter);jajko
+hard-boiled egg (expression);jajko na twardo
+fair, bright (adjective);jasny
+white bread (expression);jasny chleb
+she's eating a roll with cheese (expression);je bułkę z serem
+she's eating a roll with cold cuts (expression);je bułkę z wędliną
+she's eating bread with butter (expression);je chleb z masłem
+you eat fish and chips (expression);jecie rybę z frytkami
+I eat fish (expression);jem rybę
+it's late (expression);jest już późno
+it's delicious (expression);jest pyszna
+still / yet (adverb);jeszcze
+to eat (verb);jeść
+shrew (noun, Feminine);jędza
+yoghourt (noun, Masculine);jogurt
+raspberry yoghurt (expression);jogurt malinowy
+natural yoghurt (expression);jogurt naturalny
+fruit yoghurt (expression);jogurt owocowy
+strawberry yoghurt (expression);jogurt truskawkowy
+yoghurt with flakes (expression);jogurt z płatkami
+already (adverb);już
+I'm coming (expression);już idę
+I'm not sleeping anymore (expression);już nie śpię
+Karolina knocks on the door, Karolina is knocking on the door (expression);Karolina puka do drzwi
+grits / buckwheat / barley (noun, Feminine);kasza
+sausage (noun, Feminine);kiełbasa
+pickled cucumber (expression);kiszony ogórek
+supper (noun, Feminine);kolacja
+cutlet / chop (noun, Masculine);kotlet
+chicken (noun, Masculine);kurczak
+I like pizza (expression);lubię pizzę
+I like spaghetti (expression);lubię spaghetti
+teaspoon (noun, Feminine);łyżeczka
+spoon (noun, Feminine);łyżka
+pasta, noodle (noun, Masculine);makaron
+raspberry (noun, Feminine);malina
+I would like ... (expression);Mam ochotę na...
+Mami is having breakfast (expression);Mami je śniadanie
+butter (noun, Neuter);masło
+Do you want to...? (expression);Masz ochotę na...?
+to feel like (doing) something (expression);mieć ochotę na
+meat (noun, Neuter);mięso
+honey (noun, Masculine);miód
+bowl (noun, Feminine);miska
+milk (noun, Neuter);mleko
+strong (adjective);mocny
+on, at, for (przyimek);na
+for supper (expression);na kolację
+soft-boiled (expression);na miękko
+for dinner (expression);na obiad
+for example (expression);na przykład
+for breakfast (expression);na śniadanie
+hard-boiled (expression);na twardo
+no problem (expression);Nie ma problemu!
+I don't understand. (expression);nie rozumiem
+knife (noun, Masculine);nóż
+dinner (noun, Masculine);obiad
+of course, certainly;oczywiście
+cucumber (noun, Masculine);ogórek
+omelette (noun, Masculine);omlet
+sea food (noun, Masculine);owoce morza
+frying pan (noun, Feminine);patelnia
+to drink (verb);pić
+roast potatoes (expression);pieczone ziemniaki
+pepper (noun, Masculine);pieprz
+first course (expression);pierwsze danie
+she's drinking white tea (expression);pije białą herbatę
+she is drinking tea with milk (expression);pije herbatę z mlekiem
+cornflakes / cereal (expression);płatki śniadaniowe
+tomato (noun, Masculine);pomidor
+white coffee, please (expression);poproszę białą kawę
+Tea with lemon, please. (expression);Poproszę herbatę z cytryną.
+coffee, please (expression);poproszę kawę
+dish (noun, Feminine);potrawa
+products (noun, Masculine);produkt
+one roll, please (expression);proszę bułkę
+come in, please (expression);proszę wejść
+delicious (adjective);pyszny
+I understand (expression);rozumiem
+fish (noun, Feminine);ryba
+rice (noun, Masculine);ryż
+salami (noun, Neuter);salami
+lettuce (noun, Feminine);sałata
+salad (noun, Feminine);sałatka
+vegetable salad (noun, Feminine);sałatka jarzynowa
+weak (adjective);słaby
+Enjoy your meal! (expression);Smacznego!
+Saturday morning (expression);sobota rano
+juice (noun, Masculine);sok
+raspberry juice (expression);sok malinowy
+orange juice (expression);sok pomarańczowy
+salt (noun, Feminine);sól
+raw vegetables salad (noun, Feminine);surówka
+glass (noun, Feminine);szklanka
+ham (noun, Feminine);szynka
+breakfast (noun, Neuter);śniadanie
+great meat;świetne mięso
+yes;tak
+plate (noun, Masculine);talerz
+now I remember (expression);teraz pamiętam
+fat sausage (expression);tłusta kiełbasa
+fatty, greasy (adjective);tłusty
+this is very healthy (expression);to bardzo zdrowe
+it's true (expression);to prawda
+it's great (expression);to świetnie
+traditional Polish salad (expression);tradycyjna polska sałatka
+strawberry (noun, Feminine);truskawka
+only a stereotype;tylko stereotyp
+favourite dish (expression);ulubiona potrawa
+cold cuts (noun, Feminine);wędlina
+fork (noun, Masculine);widelec
+to prefer (verb);woleć
+do you prefer white or brown bread? (expression);Wolisz jasny czy ciemny chleb?
+Do you prefer tea or coffee? (expression);Wolisz kawę czy herbatę?
+all / everything;wszystko
+with, from (przyimek);z
+with sugar (expression);z cukrem
+with lemon (expression);z cytryną
+What is it with? What does it include? (expression);Z czym ona jest?
+with ice (expression);z lodem
+with mayonnaise (expression);z majonezem
+with margarine (expression);z margaryną
+with milk (expression);z mlekiem
+with a cucumber (expression);z ogórkiem
+with a tomato (expression);z pomidorem
+with sauce (expression);z sosem
+to invite (verb);zapraszać
+Welcome! (expression);Zapraszamy!
+always (adverb);zawsze
+from, with;ze
+green tea (expression);zielona herbata
+green salad (expression);zielona sałata
+cold juice (expression);zimny sok
+soup (noun, Feminine);zupa
+tomato soup (expression);zupa pomidorowa
+usually (adverb);zwykle
+with;z/ze
+that;że
+hard cheese (noun, Masculine);żółty ser

@@ -1,0 +1,113 @@
+#separator:semicolon
+#html:true
+17 and a half (expression);17 i pół
+photo album (expression);album na fotografie
+camera (expression);aparat fotograficzny
+car (noun, Neuter);auto
+ATM - automated teller machine, cash machine (noun, Masculine);bankomat
+poor (adjective);biedny
+ticket (noun, Masculine);bilet
+a full price ticket (expression);bilet normalny
+a reduced-fare ticket (expression);bilet ulgowy
+I'll take this one. (expression);Biorę ten.
+rich (adjective);bogaty
+What are you doing? (expression);Co robisz?
+to wait (verb);czekać
+red pen (expression);czerwony długopis
+four hundred (Numeral);czterysta
+anything else? (expression);Czy coś jeszcze?
+Is there...? (expression);Czy jest...?
+Are there any cigarettes? (expression);Czy są papierosy?
+Is that all? (expression);Czy to wszystko?
+long list (expression);długą listę
+long (adjective);długi
+home (expression);do domu
+good idea (expression);dobry pomysł
+exactly (adverb);dokładnie
+drugstore (noun, Feminine);drogeria
+dear, expensive (adjective);drogi
+two hundred (Numeral);dwieście
+nine hundred (Numeral);dziewięćset
+movie / film (noun, Masculine);film
+functional (adjective);funkcjonalny
+newspaper (noun, Feminine);gazeta
+Where can I buy...? (expression);Gdzie mogę kupić...?
+penny (noun, Masculine);grosz
+chewing gum (expression);guma do żucia
+How much is it? (expression);Ile kosztuje?
+how much Euro do you have? (expression);Ile masz euro?
+How old are you? (expression);Ile masz lat?
+go (verb);iść
+What brand do you recommend? (expression);Jaką firmę pan poleca?
+what's the brand? (expression);jakiej firmy
+one coupon costs (expression);jeden kupon kosztuje
+it's short;jest krótka
+are you a student? (expression);jest pani studentką
+you're rich (expression);jesteś bogata
+are you busy? (expression);Jesteś zajęta?
+currency exchange (noun, Masculine);kantor
+memory card (expression);karta pamięci
+colour magazine, glossy (expression);kolorowy magazyn
+to cost (verb);kosztować
+cat (noun, Masculine);kot
+short (adjective);krótki
+coupon, voucher (noun, Masculine);kupon
+limit (noun, Masculine);limit
+letter (noun, Masculine);list
+shopping list (expression);lista zakupów
+lottery (noun, Feminine);loteria
+small map (expression);mała mapa
+I have an intelligent brother (expression);mam inteligentnego brata
+do you have any Euro left? (expression);mam jeszcze euro
+map (noun, Feminine);mapa
+do you have a cash card? (expression);masz kartę do bankomatu
+Do you have time? (expression);Masz wolny czas?
+you have everything (expression);masz wszystko
+match (noun, Masculine);mecz
+to have time (expression);mieć czas
+mint-flavoured chewing gum (expression);miętowa guma do żucia
+maybe;może
+Maybe a walk? (expression);Może spacer?
+my plan (expression);mój plan
+for today (expression);na dzisiaj
+for tomorrow (expression);na jutro
+surely, certainly (adverb);na pewno
+no problem (expression);Nie ma problemu!
+I don't have any money (expression);nie mam pieniędzy
+you don't study at the university (expression);nie studiujesz na uniwersytecie
+uninteresting (adjective);nieciekawy
+inexpensive (adjective);niedrogi
+eight hundred (Numeral);osiemset
+money;pieniądze
+dog (noun, Masculine);pies
+five hundred (Numeral);pięćset
+beer (noun, Neuter);piwo
+plan (noun, Masculine);plan
+homework (expression);praca domowa
+please (expression);proszę
+to talk (to/with) / to speak (to/with) (verb);rozmawiać
+they are free (expression);są gratis
+seven hundred (Numeral);siedemset
+a self-service shop (expression);sklep samoobsługowy
+word (noun, Neuter);słowo
+How can I help you? Yes, please? (expression);Słucham?
+six hundred (Numeral);sześćset
+yes;tak
+cash-desk is over there (expression);tam jest kasa
+cheap (adjective);tani
+it's a special offer / it's a bargain (expression);to promocja
+bag (noun, Feminine);torba
+three hundred (Numeral);trzysta
+it's so interesting in here (expression);tu jest tak interesująco
+to bet on 6 numbers (expression);typować 6 numerów
+thousand (Numeral);tysiąc
+at home (expression);w domu
+free time (expression);wolny czas
+all / everything;wszystko
+you choose 3 numbers (expression);wytypujesz 3 numery
+homework (expression);zadanie domowe
+busy, engaged (adjective);zajęty
+shopping (noun, Neuter);zakupy
+shopping for mum (expression);zakupy dla mamy
+sentence, opinion (noun, Neuter);zdanie
+golden (adjective);złoty

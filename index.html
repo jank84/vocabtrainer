@@ -2393,7 +2393,9 @@
       'frequency_adverbs.txt',
       'numbers_extended.txt',
       'adjectives_p31-32.txt',
-      'nouns_p50.txt'
+      'nouns_p50.txt',
+      'lesson-7.txt',
+      'lesson-8.txt'
     ];
     const FILES_REGISTRY_KEY = 'anki_scribe_files';      // JSON array of {slug, name}
     const ACTIVE_FILE_KEY = 'anki_scribe_active_file';    // slug of last-used file
@@ -3461,10 +3463,16 @@
     // ---- Changelog / "What's New" dialog ----
     // Bump APP_VERSION whenever a new entry is added; the dialog is then shown
     // exactly once after the new version has been installed and opened.
-    const APP_VERSION = '1.13.0';
-    const APP_RELEASE_DATE = '2026-10-13';
+    const APP_VERSION = '1.15.0';
+    const APP_RELEASE_DATE = '2026-11-02';
     const CHANGELOG_KEY = 'anki_scribe_seen_version';
     const CHANGELOG = {
+      '1.15.0': [
+        'Added: "lesson-8" — topic: Mami, jesteś głodna?.'
+      ],
+      '1.14.0': [
+        'Added: "lesson-7" — topic: Małe zakupy'
+      ],
       '1.13.0': [
         'New: Learn across files (mix) — select multiple vocabulary files in the picker and train them as one set; each combination keeps its own stable batches, statistics and skipped words'
       ],
