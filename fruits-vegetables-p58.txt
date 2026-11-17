@@ -1,0 +1,34 @@
+#separator:semicolon
+#html:true
+banana;banan
+apple;jabłko
+pear;gruszka
+plum;śliwka
+orange;pomarańcza
+peach;brzoskwinia
+kiwi;kiwi
+grapes (plural);winogrona
+lemon;cytryna
+strawberry;truskawka
+raspberry;malina
+cherry;wiśnia
+pineapple;ananas
+watermelon;arbuz
+berries (plural);jagody
+potato;ziemniak
+tomato;pomidor
+cucumber;ogórek
+carrot;marchewka
+leek;por
+celery;seler
+onion;cebula
+parsley;pietruszka
+pepper;papryka
+garlic;czosnek
+cauliflower;kalafior
+broccoli (plural);brokuły
+radish;rzodkiewka
+cabbage;kapusta
+beans;fasola
+green peas;groszek
+corn;kukurydza
